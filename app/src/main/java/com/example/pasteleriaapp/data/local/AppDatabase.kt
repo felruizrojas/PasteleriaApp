@@ -13,15 +13,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import com.example.pasteleriaapp.data.local.dao.CarritoDao
+import com.example.pasteleriaapp.data.local.entity.CarritoItemEntity
 
 @Database(
-    entities = [CategoriaEntity::class, ProductoEntity::class],
-    version = 1,
+    // --- MODIFICADO: Añadir CarritoItemEntity ---
+    entities = [CategoriaEntity::class, ProductoEntity::class, CarritoItemEntity::class],
+    version = 1, // Mantenemos la versión 1, fallbackToDestructiveMigration hará el trabajo
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun categoriaDao(): CategoriaDao
     abstract fun productoDao(): ProductoDao
+    abstract fun carritoDao(): CarritoDao // <-- MÉTODO AÑADIDO
 
     companion object {
         @Volatile

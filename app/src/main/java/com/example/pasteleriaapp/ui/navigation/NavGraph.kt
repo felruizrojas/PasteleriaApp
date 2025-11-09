@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.domain.repository.CategoriaRepository
 import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.ui.screen.home.HomeScreen
@@ -35,6 +36,7 @@ fun AppNavGraph(
     navController: NavHostController,
     categoriaRepository: CategoriaRepository,
     productoRepository: ProductoRepository,
+    carritoRepository: CarritoRepository,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -110,7 +112,11 @@ fun AppNavGraph(
             val idProducto = backStackEntry.arguments?.getInt(Rutas.ARG_ID_PRODUCTO)
             requireNotNull(idProducto) { "idProducto no encontrado en la ruta" }
 
-            val factory = ProductoDetalleViewModelFactory(productoRepository, idProducto)
+            val factory = ProductoDetalleViewModelFactory(
+                productoRepository,
+                carritoRepository,
+                idProducto
+            )
             val viewModel: ProductoDetalleViewModel = viewModel(
                 key = "detalle_producto_$idProducto",
                 factory = factory

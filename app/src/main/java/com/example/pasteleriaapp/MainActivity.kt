@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.pasteleriaapp.data.local.AppDatabase
 import com.example.pasteleriaapp.data.repository.CategoriaRepositoryImpl
+import com.example.pasteleriaapp.data.repository.CarritoRepositoryImpl
+// --- ¡ESTA ES LA LÍNEA CORREGIDA! ---
+import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.data.repository.ProductoRepositoryImpl
 import com.example.pasteleriaapp.ui.navigation.AppNavGraph
 import com.example.pasteleriaapp.ui.theme.PasteleriaAppTheme
@@ -27,6 +30,7 @@ class MainActivity : ComponentActivity() {
         // pasándoles los DAOs desde la base de datos.
         val categoriaRepository = CategoriaRepositoryImpl(database.categoriaDao())
         val productoRepository = ProductoRepositoryImpl(database.productoDao())
+        val carritoRepository = CarritoRepositoryImpl(database.carritoDao())
 
         // --- 2. Configuración del Contenido ---
         setContent {
@@ -40,12 +44,10 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     categoriaRepository = categoriaRepository, // Le pasamos el repositorio
                     productoRepository = productoRepository,   // Le pasamos el repositorio
+                    carritoRepository = carritoRepository,
                     modifier = Modifier.fillMaxSize()
                 )
             }
         }
     }
 }
-
-// --- Eliminamos Greeting y GreetingPreview ---
-// Ya no los necesitamos, ya que AppNavGraph es nuestro contenido principal.

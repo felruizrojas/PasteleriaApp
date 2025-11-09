@@ -1,8 +1,8 @@
 package com.example.pasteleriaapp.ui.screen.productos
 
 import android.content.Context
-import android.content.Intent // <-- NUEVO IMPORT
-import android.widget.Toast // <-- NUEVO IMPORT
+import android.content.Intent
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-// --- NUEVOS IMPORTS ---
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
@@ -32,7 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-// --- FIN NUEVOS IMPORTS ---
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -57,6 +56,19 @@ fun ProductoDetalleScreen(
     onEditProductoClick: (Int) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // LaunchedEffect para mostrar el Toast
+    LaunchedEffect(state.itemAgregado) {
+        if (state.itemAgregado) {
+            Toast.makeText(
+                context,
+                "${state.producto?.nombreProducto} añadido al carrito",
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.eventoItemAgregadoMostrado() // Resetea el evento
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -89,7 +101,13 @@ fun ProductoDetalleScreen(
             when {
                 state.estaCargando -> CircularProgressIndicator()
                 state.error != null -> Text("Error: ${state.error}")
-                state.producto != null -> ProductoDetalle(state.producto!!)
+                state.producto != null -> ProductoDetalle(
+                    state.producto!!,
+                    // Pasamos la función del ViewModel
+                    onAgregarAlCarrito = { mensaje ->
+                        viewModel.agregarAlCarrito(mensaje)
+                    }
+                )
                 else -> Text("Producto no encontrado.")
             }
         }
@@ -97,12 +115,14 @@ fun ProductoDetalleScreen(
 }
 
 @Composable
-private fun ProductoDetalle(producto: Producto) {
-
+private fun ProductoDetalle(
+    producto: Producto,
+    onAgregarAlCarrito: (String) -> Unit
+) {
     val context = LocalContext.current
     val imageResId = painterResourceFromName(context, producto.imagenProducto)
 
-    // --- NUEVO: Estado para guardar el mensaje personalizado ---
+    // --- CORREGIDO: Solo hay UNA declaración ---
     var mensajePersonalizado by remember { mutableStateOf("") }
 
     Column(
@@ -173,12 +193,8 @@ private fun ProductoDetalle(producto: Producto) {
             // 2. Botón Añadir al Carrito
             Button(
                 onClick = {
-                    // TODO: Lógica para añadir al carrito (aún no implementada)
-                    Toast.makeText(
-                        context,
-                        "${producto.nombreProducto} añadido al carrito",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    onAgregarAlCarrito(mensajePersonalizado)
+                    mensajePersonalizado = "" // Limpia el campo
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
