@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.pasteleriaapp.data.local.entity.UsuarioEntity
 
 @Dao
@@ -21,4 +22,8 @@ interface UsuarioDao {
     // Para pre-poblar
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertarUsuarios(usuarios: List<UsuarioEntity>)
+
+    // --- FUNCIÓN NUEVA AÑADIDA ---
+    @Update
+    suspend fun actualizarUsuario(usuario: UsuarioEntity)
 }

@@ -43,4 +43,11 @@ class UsuarioRepositoryImpl(
         // 3. Si no existe, insertar
         dao.insertarUsuario(usuario.toUsuarioEntity())
     }
+
+    // --- FUNCIÓN NUEVA AÑADIDA ---
+    override suspend fun actualizarUsuario(usuario: Usuario) {
+        // Podríamos añadir validaciones aquí si fuera necesario
+        dao.actualizarUsuario(usuario.toUsuarioEntity())
+    }
+
 }

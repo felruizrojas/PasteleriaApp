@@ -13,6 +13,8 @@ data class AuthUiState(
     val loginSuccess: Boolean = false,
     val registerSuccess: Boolean = false,
     val usuarioActual: Usuario? = null,
+    val logoutSuccess: Boolean = false,    // <-- AÑADIDO
+    val updateSuccess: Boolean = false,    // <-- AÑADIDO
 
     // --- Campos de Login ---
     val loginCorreo: String = "",
@@ -28,5 +30,12 @@ data class AuthUiState(
     val regComuna: String = "",
     val regDireccion: String = "",
     val regContrasena: String = "",
-    val regRepetirContrasena: String = ""
+    val regRepetirContrasena: String = "",
+
+    val profNombre: String = "",
+    val profApellidos: String = "",
+    val profRegion: String = "",
+    val profComuna: String = "",
+    val profDireccion: String = ""
+
 )

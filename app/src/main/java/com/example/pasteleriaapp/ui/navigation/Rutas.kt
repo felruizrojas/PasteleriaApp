@@ -16,6 +16,11 @@ object Rutas {
     const val REGISTRO = "registro"
 
     const val AUTH_FLOW = "auth_flow"
+
+    const val PERFIL = "perfil"
+
+    const val EDITAR_PERFIL = "editar_perfil"
+
     private const val PRODUCTOS = "productos"
 
     // --- Rutas Compuestas (con argumentos) ---

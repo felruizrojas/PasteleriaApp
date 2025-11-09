@@ -9,9 +9,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.pasteleriaapp.data.local.dao.CarritoDao
 import com.example.pasteleriaapp.data.local.dao.CategoriaDao
 import com.example.pasteleriaapp.data.local.dao.ProductoDao
+import com.example.pasteleriaapp.data.local.dao.PedidoDao
 import com.example.pasteleriaapp.data.local.dao.UsuarioDao // <-- NUEVO IMPORT
 import com.example.pasteleriaapp.data.local.entity.CarritoItemEntity
 import com.example.pasteleriaapp.data.local.entity.CategoriaEntity
+import com.example.pasteleriaapp.data.local.entity.PedidoEntity // <-- NUEVO IMPORT
+import com.example.pasteleriaapp.data.local.entity.PedidoProductoEntity
 import com.example.pasteleriaapp.data.local.entity.ProductoEntity
 import com.example.pasteleriaapp.data.local.entity.UsuarioEntity // <-- NUEVO IMPORT
 import com.example.pasteleriaapp.domain.model.TipoUsuario // <-- NUEVO IMPORT
@@ -25,7 +28,9 @@ import kotlinx.coroutines.launch
         CategoriaEntity::class,
         ProductoEntity::class,
         CarritoItemEntity::class,
-        UsuarioEntity::class // <-- TABLA AÑADIDA
+        UsuarioEntity::class, // <-- TABLA AÑADIDA
+        PedidoEntity::class, // <-- TABLA AÑADIDA
+        PedidoProductoEntity::class // <-- TABLA AÑADIDA
     ],
     version = 1, // Mantenemos versión 1, fallbackToDestructiveMigration hará el trabajo
     exportSchema = false
@@ -35,7 +40,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoriaDao(): CategoriaDao
     abstract fun productoDao(): ProductoDao
     abstract fun carritoDao(): CarritoDao
-    abstract fun usuarioDao(): UsuarioDao // <-- MÉTODO AÑADIDO
+    abstract fun usuarioDao(): UsuarioDao
+    abstract fun pedidoDao(): PedidoDao
 
     companion object {
         @Volatile

@@ -36,6 +36,13 @@ class AuthViewModel(
     fun onRegContrasenaChange(valor: String) { _uiState.update { it.copy(regContrasena = valor) } }
     fun onRegRepetirContrasenaChange(valor: String) { _uiState.update { it.copy(regRepetirContrasena = valor) } }
 
+    // --- NUEVOS Eventos de Edición de Perfil ---
+    fun onProfNombreChange(valor: String) { _uiState.update { it.copy(profNombre = valor) } }
+    fun onProfApellidosChange(valor: String) { _uiState.update { it.copy(profApellidos = valor) } }
+    fun onProfRegionChange(valor: String) { _uiState.update { it.copy(profRegion = valor) } }
+    fun onProfComunaChange(valor: String) { _uiState.update { it.copy(profComuna = valor) } }
+    fun onProfDireccionChange(valor: String) { _uiState.update { it.copy(profDireccion = valor) } }
+
     // --- Lógica de Negocio ---
 
     fun login() {
@@ -102,11 +109,77 @@ class AuthViewModel(
         }
     }
 
-    // Para resetear el estado después de una navegación exitosa
+
+
+    // --- FUNCIÓN NUEVA: Cargar datos en el formulario de edición ---
+    fun cargarDatosPerfil() {
+        _uiState.value.usuarioActual?.let { usuario ->
+            _uiState.update {
+                it.copy(
+                    profNombre = usuario.nombre,
+                    profApellidos = usuario.apellidos,
+                    profRegion = usuario.region,
+                    profComuna = usuario.comuna,
+                    profDireccion = usuario.direccion
+                )
+            }
+        }
+    }
+
+    // --- FUNCIÓN NUEVA: Guardar cambios del perfil ---
+    fun guardarCambiosPerfil() {
+        val state = _uiState.value
+        val usuario = state.usuarioActual ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                // Creamos el usuario actualizado
+                val usuarioActualizado = usuario.copy(
+                    nombre = state.profNombre.trim(),
+                    apellidos = state.profApellidos.trim(),
+                    region = state.profRegion.trim(),
+                    comuna = state.profComuna.trim(),
+                    direccion = state.profDireccion.trim()
+                )
+                repository.actualizarUsuario(usuarioActualizado)
+                // Actualizamos el estado global
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        usuarioActual = usuarioActualizado, // <-- Clave
+                        updateSuccess = true
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    // --- FUNCIÓN NUEVA: Cerrar Sesión ---
+    fun logout() {
+        _uiState.value = AuthUiState(logoutSuccess = true) // Resetea todo
+    }
+
+    // --- MODIFICADO: resetNavegacion ---
     fun resetNavegacion() {
-        _uiState.update { it.copy(loginSuccess = false, registerSuccess = false, error = null) }
+        _uiState.update {
+            it.copy(
+                loginSuccess = false,
+                registerSuccess = false,
+                error = null,
+                logoutSuccess = false,
+                updateSuccess = false
+            )
+        }
     }
 }
+
+
+
+
+
 
 
 // Factory para el AuthViewModel
