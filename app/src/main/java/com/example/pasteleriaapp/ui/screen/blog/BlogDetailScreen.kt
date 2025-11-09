@@ -1,5 +1,14 @@
 package com.example.pasteleriaapp.ui.screen.blog
 
+// --- IMPORTS AÑADIDOS ---
+import android.content.Context
+import android.content.Intent
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.pasteleriaapp.domain.model.BlogPost
+// --- FIN IMPORTS AÑADIDOS ---
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,14 +33,32 @@ fun BlogDetailScreen(
 ) {
     // Obtenemos el post estático
     val post = remember { BlogData.getPostById(postId) }
+    // Obtenemos el contexto para el Intent de compartir
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(post?.titulo ?: "Artículo") },
+                title = {
+                    Text(
+                        post?.titulo ?: "Artículo",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
+                    }
+                },
+                // --- BOTÓN DE COMPARTIR AÑADIDO ---
+                actions = {
+                    if (post != null) {
+                        IconButton(onClick = {
+                            compartirBlogPost(context, post)
+                        }) {
+                            Icon(Icons.Default.Share, "Compartir artículo")
+                        }
                     }
                 }
             )
@@ -81,4 +108,34 @@ fun BlogDetailScreen(
             }
         }
     }
+}
+
+/**
+ * --- NUEVA FUNCIÓN AUXILIAR AÑADIDA ---
+ * Crea un Intent de Android para compartir el artículo del blog.
+ */
+private fun compartirBlogPost(context: Context, post: BlogPost) {
+    // Tomamos solo los primeros 100 caracteres del contenido para el resumen
+    val resumenContenido = post.contenido.take(100) + "..."
+
+    val textoCompartir = """
+¡Mira este artículo de Pastelería Mil Sabores!
+
+*${post.titulo}*
+${post.autor}
+
+$resumenContenido
+
+(Lee el artículo completo en nuestra app)
+    """.trimIndent()
+
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, post.titulo)
+        putExtra(Intent.EXTRA_TEXT, textoCompartir)
+    }
+
+    context.startActivity(
+        Intent.createChooser(intent, "Compartir artículo en...")
+    )
 }
