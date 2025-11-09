@@ -19,15 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-/**
- * Pantalla de inicio (HomeScreen).
- * Es la primera pantalla que ve el usuario.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    // Lambda para ser llamado cuando el usuario quiera ver las categorías
-    onVerCategoriasClick: () -> Unit
+    // --- MODIFICADO: Ahora pedimos 3 lambdas ---
+    onCatalogoClick: () -> Unit,
+    onNosotrosClick: () -> Unit,
+    onLoginClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -38,7 +36,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp), // Padding interno adicional
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -48,24 +46,33 @@ fun HomeScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Explora nuestro delicioso catálogo de productos.",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-
             Spacer(modifier = Modifier.height(32.dp))
 
+            // --- BOTONES ACTUALIZADOS ---
             Button(
-                onClick = onVerCategoriasClick,
+                onClick = onCatalogoClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Ver Categorías de Productos")
+                Text("Catálogo de Productos")
             }
 
-            // Aquí podrías agregar más botones, como "Ver Carrito" o "Mi Cuenta"
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onNosotrosClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Nosotros")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onLoginClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Inicio de Sesión")
+            }
         }
     }
 }

@@ -9,6 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+// --- IMPORTS NUEVOS ---
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+// --- FIN IMPORTS NUEVOS ---
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,19 +30,24 @@ import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 
+/**
+ * Pantalla que muestra la lista de productos.
+ * (Comentario original corregido)
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoListScreen(
     viewModel: ProductoViewModel,
-    onBackClick: () -> Unit, // Lambda para volver atrás
-    onProductoClick: (Int) -> Unit // Lambda para ir al detalle
+    onBackClick: () -> Unit,
+    onProductoClick: (Int) -> Unit,
+    onAddProductoClick: () -> Unit // <-- ¡ESTE ES EL PARÁMETRO QUE FALTABA!
 ) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Productos") }, // Debería ser el nombre de la categoría
+                title = { Text("Productos") }, // Puedes hacerlo dinámico si quieres
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -48,7 +57,15 @@ fun ProductoListScreen(
                     }
                 }
             )
+        },
+        // --- CÓDIGO AÑADIDO ---
+        // Este es el botón "+" para añadir productos
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddProductoClick) {
+                Icon(Icons.Default.Add, contentDescription = "Añadir Producto")
+            }
         }
+        // --- FIN DE CÓDIGO AÑADIDO ---
     ) { paddingValues ->
         Box(
             modifier = Modifier

@@ -3,6 +3,9 @@ package com.example.pasteleriaapp.ui.screen.productos
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+// --- IMPORTS NUEVOS ---
+import androidx.compose.material.icons.filled.Edit
+// --- FIN IMPORTS NUEVOS ---
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,7 +20,8 @@ import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 @Composable
 fun ProductoDetalleScreen(
     viewModel: ProductoDetalleViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditProductoClick: (Int) -> Unit // <-- ¡ESTE ES EL PARÁMETRO QUE FALTABA!
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -32,7 +36,17 @@ fun ProductoDetalleScreen(
                             contentDescription = "Volver"
                         )
                     }
+                },
+                // --- CÓDIGO AÑADIDO ---
+                // Botón de "Editar" en la barra superior
+                actions = {
+                    state.producto?.let {
+                        IconButton(onClick = { onEditProductoClick(it.idProducto) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
+                        }
+                    }
                 }
+                // --- FIN DE CÓDIGO AÑADIDO ---
             )
         }
     ) { paddingValues ->
