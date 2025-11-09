@@ -19,7 +19,8 @@ import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 fun ProfileScreen(
     authViewModel: AuthViewModel,
     onNavigateToEdit: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToMisPedidos: () -> Unit
 ) {
     val state by authViewModel.uiState.collectAsState()
     val usuario = state.usuarioActual
@@ -72,6 +73,14 @@ fun ProfileScreen(
             InfoRow(label = "Dirección:", value = usuario.direccion)
 
             Spacer(Modifier.height(32.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToMisPedidos,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Mis Pedidos")
+            }
+            Spacer(Modifier.height(8.dp))
 
             // --- LÓGICA CONDICIONAL (Tu solicitud) ---
             when (usuario.tipoUsuario) {

@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pasteleriaapp.R
@@ -35,7 +36,8 @@ import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 @Composable
 fun CarritoScreen(
     viewModel: CarritoViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToCheckout: () -> Unit // <-- ¡CAMBIO IMPORTANTE! (Paso 8)
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -62,10 +64,7 @@ fun CarritoScreen(
             if (state.hayItems) {
                 CarritoBottomBar(
                     total = state.precioTotal,
-                    onPagarClick = {
-                        Toast.makeText(context, "Redirigiendo al pago...", Toast.LENGTH_SHORT).show()
-                        // Aquí iría la lógica de pago
-                    }
+                    onPagarClick = onNavigateToCheckout // <-- ¡CAMBIO IMPORTANTE! (Paso 8)
                 )
             }
         }
@@ -185,7 +184,7 @@ fun CarritoItemRow(
 @Composable
 fun CarritoBottomBar(
     total: Double,
-    onPagarClick: () -> Unit
+    onPagarClick: () -> Unit // <-- ¡LA DEFINICIÓN ESTÁ AQUÍ Y ES CORRECTA!
 ) {
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.surfaceVariant

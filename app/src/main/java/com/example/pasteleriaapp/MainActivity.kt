@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pasteleriaapp.data.local.AppDatabase
 import com.example.pasteleriaapp.data.repository.CategoriaRepositoryImpl
 import com.example.pasteleriaapp.data.repository.CarritoRepositoryImpl
+import com.example.pasteleriaapp.data.repository.PedidoRepositoryImpl
 // --- ¡ESTA ES LA LÍNEA CORREGIDA! ---
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.data.repository.UsuarioRepositoryImpl
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
         val productoRepository = ProductoRepositoryImpl(database.productoDao())
         val carritoRepository = CarritoRepositoryImpl(database.carritoDao())
         val usuarioRepository = UsuarioRepositoryImpl(database.usuarioDao())
+        val pedidoRepository = PedidoRepositoryImpl(database)
 
         // --- 2. Configuración del Contenido ---
         setContent {
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     productoRepository = productoRepository,   // Le pasamos el repositorio
                     carritoRepository = carritoRepository,
                     usuarioRepository = usuarioRepository,
+                    pedidoRepository = pedidoRepository,
                     modifier = Modifier.fillMaxSize()
                 )
             }

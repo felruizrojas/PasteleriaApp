@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.domain.repository.CategoriaRepository
+import com.example.pasteleriaapp.domain.repository.PedidoRepository // <-- NUEVO IMPORT
 import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.domain.repository.UsuarioRepository
 import com.example.pasteleriaapp.ui.screen.auth.LoginScreen
@@ -25,25 +28,25 @@ import com.example.pasteleriaapp.ui.screen.auth.RegisterScreen
 import com.example.pasteleriaapp.ui.screen.carrito.CarritoScreen
 import com.example.pasteleriaapp.ui.screen.home.HomeScreen
 // --- NUEVOS IMPORTS ---
+import com.example.pasteleriaapp.ui.screen.pedidos.CheckoutScreen
+import com.example.pasteleriaapp.ui.screen.pedidos.MisPedidosScreen
+import com.example.pasteleriaapp.ui.screen.pedidos.PedidoDetalleScreen
 import com.example.pasteleriaapp.ui.screen.profile.EditarProfileScreen
 import com.example.pasteleriaapp.ui.screen.profile.ProfileScreen
 // --- FIN NUEVOS IMPORTS ---
 import com.example.pasteleriaapp.ui.screen.productos.CategoriasScreen
-import com.example.pasteleriaapp.ui.screen.productos.ProductoDetalleScreen
-import com.example.pasteleriaapp.ui.screen.productos.ProductoFormScreen
-import com.example.pasteleriaapp.ui.screen.productos.ProductoListScreen
+// ... (imports existentes: ProductoDetalleScreen, ProductoFormScreen, etc.)
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModel
 import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModelFactory
-import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
-import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModelFactory
-import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModel
-import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModelFactory
-import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
-import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModelFactory
+// ... (imports existentes: CategoriaViewModelFactory, ProductoDetalleViewModel, etc.)
+// --- NUEVOS IMPORTS ---
+import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModel
+import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModelFactory
+// --- FIN NUEVOS IMPORTS ---
 
 @Composable
 fun AppNavGraph(
@@ -52,37 +55,35 @@ fun AppNavGraph(
     productoRepository: ProductoRepository,
     carritoRepository: CarritoRepository,
     usuarioRepository: UsuarioRepository,
+    pedidoRepository: PedidoRepository, // <-- PARÁMETRO AÑADIDO
     modifier: Modifier = Modifier
 ) {
-    // --- ¡CAMBIO IMPORTANTE! ---
-    // Creamos el AuthViewModel aquí, en el nivel superior.
+    // --- ViewModels COMPARTIDOS (NIVEL SUPERIOR) ---
     val authFactory = AuthViewModelFactory(usuarioRepository)
     val authViewModel: AuthViewModel = viewModel(factory = authFactory)
-    // --- FIN DEL CAMBIO ---
+
+    // ¡ELEVADO! CarritoViewModel ahora se comparte
+    val carritoFactory = CarritoViewModelFactory(carritoRepository)
+    val carritoViewModel: CarritoViewModel = viewModel(factory = carritoFactory)
+
+    // ¡NUEVO! PedidoViewModel se comparte
+    val pedidoFactory = PedidoViewModelFactory(pedidoRepository, carritoRepository)
+    val pedidoViewModel: PedidoViewModel = viewModel(factory = pedidoFactory)
+    // --- FIN ViewModels COMPARTIDOS ---
 
     NavHost(
         navController = navController, startDestination = Rutas.HOME, modifier = modifier
     ) {
-        // --- 1. RUTA HOME (MODIFICADA) ---
+        // --- 1. RUTA HOME ---
         composable(Rutas.HOME) {
             HomeScreen(
-                authViewModel = authViewModel, // <-- Pasamos el ViewModel
-                onNavigateToAuth = {
-                    navController.navigate(Rutas.AUTH_FLOW)
-                },
-                onNavigateToPerfil = {
-                    navController.navigate(Rutas.PERFIL)
-                },
-                onNavigateToCatalogo = {
-                    navController.navigate(Rutas.CATEGORIAS)
-                },
-                onNavigateToNosotros = {
-                    navController.navigate(Rutas.NOSOTROS)
-                },
-                onNavigateToCarrito = {
-                    navController.navigate(Rutas.CARRITO)
-                },
-                onLogoutSuccess = { // Navega a Home al cerrar sesión
+                authViewModel = authViewModel,
+                onNavigateToAuth = { navController.navigate(Rutas.AUTH_FLOW) },
+                onNavigateToPerfil = { navController.navigate(Rutas.PERFIL) },
+                onNavigateToCatalogo = { navController.navigate(Rutas.CATEGORIAS) },
+                onNavigateToNosotros = { navController.navigate(Rutas.NOSOTROS) },
+                onNavigateToCarrito = { navController.navigate(Rutas.CARRITO) },
+                onLogoutSuccess = {
                     navController.navigate(Rutas.HOME) {
                         popUpTo(Rutas.HOME) { inclusive = true }
                     }
@@ -90,22 +91,17 @@ fun AppNavGraph(
             )
         }
 
-        // --- 2. FLUJO DE AUTENTICACIÓN (MODIFICADO) ---
-        // Ahora recibe el ViewModel como parámetro
+        // --- 2. FLUJO DE AUTENTICACIÓN ---
         authGraph(navController, authViewModel)
 
-        // --- 3. RUTA CATEGORIAS (MODIFICADA) ---
+        // --- 3. RUTA CATEGORIAS ---
         composable(Rutas.CATEGORIAS) {
             val factory = CategoriaViewModelFactory(categoriaRepository)
             val viewModel: CategoriaViewModel = viewModel(factory = factory)
             CategoriasScreen(
                 viewModel = viewModel,
-                onCategoriaClick = { idCategoria ->
-                    navController.navigate(Rutas.obtenerRutaProductos(idCategoria))
-                },
-                onCarritoClick = {
-                    navController.navigate(Rutas.CARRITO)
-                }
+                onCategoriaClick = { id -> navController.navigate(Rutas.obtenerRutaProductos(id)) },
+                onCarritoClick = { navController.navigate(Rutas.CARRITO) }
             )
         }
 
@@ -114,56 +110,94 @@ fun AppNavGraph(
         composable(Rutas.DETALLE_PRODUCTO_RUTA, arguments = listOf(/*...*/)) { /*...*/ }
         composable(Rutas.FORMULARIO_PRODUCTO, arguments = listOf(/*...*/)) { /*...*/ }
 
-
         // --- 7. RUTA NOSOTROS (Placeholder) ---
         composable(Rutas.NOSOTROS) {
             PlaceholderScreen(texto = "Pantalla 'Nosotros'")
         }
 
-        // --- 8. RUTA CARRITO ---
+        // --- 8. RUTA CARRITO (MODIFICADA) ---
         composable(Rutas.CARRITO) {
-            val factory = CarritoViewModelFactory(carritoRepository)
-            val viewModel: CarritoViewModel = viewModel(factory = factory)
             CarritoScreen(
-                viewModel = viewModel,
-                onBackClick = {
-                    navController.popBackStack()
+                viewModel = carritoViewModel, // <-- Usa el ViewModel compartido
+                onBackClick = { navController.popBackStack() },
+                onNavigateToCheckout = { // <-- LAMBDA AÑADIDO
+                    navController.navigate(Rutas.CHECKOUT)
                 }
             )
         }
 
-        // --- 9. ¡NUEVAS RUTAS DE PERFIL! ---
-
-        // Muestra el perfil del usuario actual
+        // --- 9. RUTA PERFIL (MODIFICADA) ---
         composable(Rutas.PERFIL) {
             ProfileScreen(
-                authViewModel = authViewModel, // Usa el ViewModel compartido
-                onNavigateToEdit = {
-                    navController.navigate(Rutas.EDITAR_PERFIL)
-                },
-                onBackClick = {
-                    navController.popBackStack()
+                authViewModel = authViewModel,
+                onNavigateToEdit = { navController.navigate(Rutas.EDITAR_PERFIL) },
+                onBackClick = { navController.popBackStack() },
+                onNavigateToMisPedidos = { // <-- LAMBDA AÑADIDO
+                    navController.navigate(Rutas.MIS_PEDIDOS)
                 }
             )
         }
 
-        // Muestra el formulario para editar el perfil
+        // --- 10. RUTA EDITAR PERFIL ---
         composable(Rutas.EDITAR_PERFIL) {
             EditarProfileScreen(
-                authViewModel = authViewModel, // Usa el ViewModel compartido
-                onEditSuccess = {
-                    navController.popBackStack() // Vuelve a la pantalla de perfil
+                authViewModel = authViewModel,
+                onEditSuccess = { navController.popBackStack() },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // --- ¡¡NUEVAS RUTAS DE PEDIDO!! ---
+
+        // --- 11. RUTA CHECKOUT ---
+        composable(Rutas.CHECKOUT) {
+            val carritoState by carritoViewModel.uiState.collectAsState()
+
+            CheckoutScreen(
+                authViewModel = authViewModel,
+                pedidoViewModel = pedidoViewModel,
+                carritoState = carritoState, // <-- Pasa el estado del carrito
+                onPedidoCreado = {
+                    // Vuelve a Home después de comprar
+                    navController.navigate(Rutas.HOME) {
+                        popUpTo(Rutas.HOME) { inclusive = true }
+                    }
                 },
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // --- 12. RUTA MIS PEDIDOS ---
+        composable(Rutas.MIS_PEDIDOS) {
+            MisPedidosScreen(
+                authViewModel = authViewModel,
+                pedidoViewModel = pedidoViewModel,
+                onPedidoClick = { idPedido ->
+                    navController.navigate(Rutas.obtenerRutaDetallePedido(idPedido))
+                },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // --- 13. RUTA DETALLE DE PEDIDO ---
+        composable(
+            route = Rutas.PEDIDO_DETALLE_RUTA,
+            arguments = listOf(navArgument("idPedido") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val idPedido = backStackEntry.arguments?.getInt("idPedido")
+            requireNotNull(idPedido) { "idPedido no encontrado" }
+
+            PedidoDetalleScreen(
+                idPedido = idPedido,
+                pedidoViewModel = pedidoViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
 }
 
 
-// --- FUNCIÓN authGraph (MODIFICADA) ---
+// --- authGraph (MODIFICADO para usar el ViewModel pasado) ---
 private fun NavGraphBuilder.authGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel // <-- Recibe el ViewModel
@@ -171,7 +205,6 @@ private fun NavGraphBuilder.authGraph(
     navigation(
         startDestination = Rutas.LOGIN, route = Rutas.AUTH_FLOW
     ) {
-        // --- Pantalla de Login ---
         composable(Rutas.LOGIN) {
             LoginScreen(
                 viewModel = authViewModel, // <-- Usa el ViewModel compartido
@@ -186,20 +219,17 @@ private fun NavGraphBuilder.authGraph(
             )
         }
 
-        // --- Pantalla de Registro ---
         composable(Rutas.REGISTRO) {
             RegisterScreen(
                 viewModel = authViewModel, // <-- Usa el ViewModel compartido
-                onRegisterSuccess = {
-                    navController.popBackStack() // Vuelve a Login
-                },
-                onBackClick = {
-                    navController.popBackStack() // Vuelve a Login
-                }
+                onRegisterSuccess = { navController.popBackStack() },
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
 }
+
+// ... (PlaceholderScreen sin cambios) ...
 
 // ... (PlaceholderScreen sin cambios) ...
 /**
