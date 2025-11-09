@@ -4,24 +4,20 @@ object Rutas {
     // Definición de los nombres de los argumentos
     const val ARG_ID_CATEGORIA = "idCategoria"
     const val ARG_ID_PRODUCTO = "idProducto"
-
     // Rutas base
     const val HOME = "home"
     const val CATEGORIAS = "categorias" // <-- Esta será tu ruta de "Catálogo"
     const val NOSOTROS = "nosotros"     // <-- NUEVA
     const val LOGIN = "login"           // <-- NUEVA
-
     const val CARRITO = "carrito"       // <-- NUEVA
-
     const val REGISTRO = "registro"
-
     const val AUTH_FLOW = "auth_flow"
-
     const val PERFIL = "perfil"
-
     const val EDITAR_PERFIL = "editar_perfil"
-
+    const val CHECKOUT = "checkout" // <-- RUTA NUEVA
+    const val MIS_PEDIDOS = "pedidos" // <-- RUTA NUEVA
     private const val PRODUCTOS = "productos"
+
 
     // --- Rutas Compuestas (con argumentos) ---
 
@@ -31,6 +27,7 @@ object Rutas {
     const val FORMULARIO_PRODUCTO =
         "$PRODUCTOS/formulario?$ARG_ID_PRODUCTO={$ARG_ID_PRODUCTO}&$ARG_ID_CATEGORIA={$ARG_ID_CATEGORIA}"
 
+    const val PEDIDO_DETALLE_RUTA = "pedidos/{idPedido}" // <-- RUTA NUEVA
 
     // --- Funciones auxiliares ... ---
 
@@ -49,5 +46,9 @@ object Rutas {
 
     fun obtenerRutaNuevoProducto(idCategoria: Int): String {
         return "$PRODUCTOS/formulario?$ARG_ID_PRODUCTO=0&$ARG_ID_CATEGORIA=$idCategoria"
+    }
+
+    fun obtenerRutaDetallePedido(idPedido: Int): String {
+        return "pedidos/$idPedido"
     }
 }
