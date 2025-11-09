@@ -10,15 +10,19 @@ import com.example.pasteleriaapp.domain.model.Producto
 data class CategoriaEntity(
     @PrimaryKey(autoGenerate = true)
     val idCategoria: Int = 0,
-    val nombreCategoria: String
+    val nombreCategoria: String,
+    val imagenCategoria: String
 )
 
 fun CategoriaEntity.toCategoria() = Categoria(
     idCategoria = idCategoria,
-    nombreCategoria = nombreCategoria
+    nombreCategoria = nombreCategoria,
+    imagenCategoria = imagenCategoria
 )
 
 fun Categoria.toCategoriaEntity() = CategoriaEntity(
     idCategoria = idCategoria,
-    nombreCategoria = nombreCategoria
+    nombreCategoria = nombreCategoria,
+    imagenCategoria = imagenCategoria
+
 )

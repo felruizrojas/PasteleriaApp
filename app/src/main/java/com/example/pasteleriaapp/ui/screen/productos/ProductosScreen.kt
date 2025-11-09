@@ -1,23 +1,32 @@
 package com.example.pasteleriaapp.ui.screen.productos
 
+// --- IMPORTS NECESARIOS (Añadidos y modificados) ---
+import android.content.Context
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-// --- IMPORTS NUEVOS ---
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-// --- FIN IMPORTS NUEVOS ---
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,28 +35,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.pasteleriaapp.R // <-- Importar R
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 
-/**
- * Pantalla que muestra la lista de productos.
- * (Comentario original corregido)
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoListScreen(
     viewModel: ProductoViewModel,
     onBackClick: () -> Unit,
     onProductoClick: (Int) -> Unit,
-    onAddProductoClick: () -> Unit // <-- ¡ESTE ES EL PARÁMETRO QUE FALTABA!
+    onAddProductoClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Productos") }, // Puedes hacerlo dinámico si quieres
+                title = { Text("Productos") }, // Puedes hacerlo dinámico
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -58,14 +69,11 @@ fun ProductoListScreen(
                 }
             )
         },
-        // --- CÓDIGO AÑADIDO ---
-        // Este es el botón "+" para añadir productos
         floatingActionButton = {
             FloatingActionButton(onClick = onAddProductoClick) {
                 Icon(Icons.Default.Add, contentDescription = "Añadir Producto")
             }
         }
-        // --- FIN DE CÓDIGO AÑADIDO ---
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -83,7 +91,8 @@ fun ProductoListScreen(
                 }
 
                 state.hayProductos -> {
-                    ProductosList(
+                    // --- MODIFICADO: Usamos una Grilla ---
+                    ProductosGrid(
                         productos = state.productos,
                         onProductoClick = onProductoClick
                     )
@@ -97,18 +106,24 @@ fun ProductoListScreen(
     }
 }
 
+/**
+ * --- NUEVO COMPOSABLE ---
+ * Muestra la grilla de productos.
+ */
 @Composable
-private fun ProductosList(
+private fun ProductosGrid(
     productos: List<Producto>,
     onProductoClick: (Int) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2), // Grilla de 2 columnas
+        contentPadding = PaddingValues(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxSize()
     ) {
         items(productos) { producto ->
-            ProductoItem(
+            ProductoCard(
                 producto = producto,
                 onClick = { onProductoClick(producto.idProducto) }
             )
@@ -116,16 +131,63 @@ private fun ProductosList(
     }
 }
 
+/**
+ * --- NUEVO COMPOSABLE ---
+ * Representa una sola Card de producto, mostrando solo imagen y nombre.
+ */
 @Composable
-private fun ProductoItem(
+private fun ProductoCard(
     producto: Producto,
     onClick: () -> Unit
 ) {
-    ListItem(
-        headlineContent = { Text(producto.nombreProducto) },
-        supportingContent = { Text("Precio: $${producto.precioProducto}") },
+    val context = LocalContext.current
+    // Usamos el nombre de la imagen del producto
+    val imageResId = painterResourceFromName(context, producto.imagenProducto)
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            Image(
+                painter = painterResource(id = imageResId),
+                contentDescription = "Imagen de ${producto.nombreProducto}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f), // Imagen cuadrada
+                contentScale = ContentScale.Crop
+            )
+            Text(
+                text = producto.nombreProducto, // <-- Solo el nombre
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+/**
+ * --- FUNCIÓN AUXILIAR (copiada de CategoriasScreen) ---
+ * Obtiene un ID de drawable a partir de su nombre (String).
+ */
+@DrawableRes
+@Composable
+private fun painterResourceFromName(context: Context, resName: String): Int {
+    return try {
+        val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+        if (resId == 0) {
+            // Imagen de fallback por si no se encuentra
+            R.drawable.ic_launcher_background
+        } else {
+            resId
+        }
+    } catch (e: Exception) {
+        R.drawable.ic_launcher_background // Fallback en caso de error
+    }
 }
