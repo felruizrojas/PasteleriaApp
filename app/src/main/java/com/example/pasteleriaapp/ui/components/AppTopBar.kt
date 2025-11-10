@@ -2,8 +2,13 @@ package com.example.pasteleriaapp.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -15,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,9 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
 
 data class AppTopBarActions(
@@ -45,7 +52,7 @@ fun AppTopBar(
     isLoggedIn: Boolean,
     actions: AppTopBarActions,
     modifier: Modifier = Modifier,
-    extraActions: @Composable RowScope.() -> Unit = {}
+    onLogout: (() -> Unit)? = null
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -118,7 +125,14 @@ fun AppTopBar(
                 Icon(Icons.Default.Person, contentDescription = if (isLoggedIn) "Perfil" else "Iniciar sesión")
             }
 
-            extraActions()
+            if (isLoggedIn && onLogout != null) {
+                IconButton(onClick = onLogout) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Cerrar sesión"
+                    )
+                }
+            }
         }
     )
 }
@@ -128,8 +142,10 @@ fun AppScaffold(
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
+    pageTitle: String? = null,
     modifier: Modifier = Modifier,
-    extraActions: @Composable RowScope.() -> Unit = {},
+    onLogout: (() -> Unit)? = null,
+    floatingActionButton: (@Composable () -> Unit)? = null,
     bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -140,11 +156,31 @@ fun AppScaffold(
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 actions = topBarActions,
-                extraActions = extraActions
+                onLogout = onLogout
             )
         },
+        floatingActionButton = floatingActionButton ?: {},
         bottomBar = bottomBar
     ) { innerPadding ->
-        content(innerPadding)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (pageTitle != null) {
+                Text(
+                    text = pageTitle,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    textAlign = TextAlign.Start
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                content(PaddingValues())
+            }
+        }
     }
 }

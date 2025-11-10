@@ -5,20 +5,23 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.pasteleriaapp.R
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -26,36 +29,35 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
-// import androidx.compose.material3.OutlinedTextField // <-- No se usa
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Producto
-// --- ¡¡NUEVO IMPORT!! ---
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.screen.auth.VoiceTextField
 import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoDetalleScreen(
     viewModel: ProductoDetalleViewModel,
     onBackClick: () -> Unit,
-    onEditProductoClick: (Int) -> Unit
+    onEditProductoClick: (Int) -> Unit,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -72,45 +74,56 @@ fun ProductoDetalleScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(state.producto?.nombreProducto ?: "Detalle del Producto") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                },
-                actions = {
-                    state.producto?.let {
-                        IconButton(onClick = { onEditProductoClick(it.idProducto) }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
-                        }
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        badgeCount = badgeCount,
+        isLoggedIn = isLoggedIn,
+        topBarActions = topBarActions,
+        pageTitle = "Detalle del Producto",
+        onLogout = onLogout
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.TopCenter
+                .padding(paddingValues)
         ) {
-            when {
-                state.estaCargando -> CircularProgressIndicator()
-                state.error != null -> Text("Error: ${state.error}")
-                state.producto != null -> ProductoDetalle(
-                    state.producto!!,
-                    // Pasamos la función del ViewModel
-                    onAgregarAlCarrito = { mensaje ->
-                        viewModel.agregarAlCarrito(mensaje)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver"
+                    )
+                }
+
+                state.producto?.let {
+                    IconButton(onClick = { onEditProductoClick(it.idProducto) }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
                     }
-                )
-                else -> Text("Producto no encontrado.")
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                when {
+                    state.estaCargando -> CircularProgressIndicator()
+                    state.error != null -> Text("Error: ${state.error}")
+                    state.producto != null -> ProductoDetalle(
+                        state.producto!!,
+                        onAgregarAlCarrito = { mensaje ->
+                            viewModel.agregarAlCarrito(mensaje)
+                        }
+                    )
+                    else -> Text("Producto no encontrado.")
+                }
             }
         }
     }
@@ -227,10 +240,6 @@ private fun ProductoDetalle(
     }
 }
 
-/**
- * --- FUNCIÓN AUXILIAR ---
- * Crea un Intent de Android para compartir el texto del producto.
- */
 private fun compartirProducto(context: Context, producto: Producto, mensaje: String) {
     val textoCompartir = """
         ¡Mira este increíble producto de Pastelería Mil Sabores!

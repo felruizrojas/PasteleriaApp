@@ -1,15 +1,27 @@
 package com.example.pasteleriaapp.ui.screen.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import android.app.DatePickerDialog
 import java.util.Calendar
@@ -18,14 +30,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     viewModel: AuthViewModel,
     onRegisterSuccess: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -44,19 +61,18 @@ fun RegisterScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Registro de Usuario") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        badgeCount = badgeCount,
+        isLoggedIn = isLoggedIn,
+        topBarActions = topBarActions,
+        pageTitle = "Registro",
+        onLogout = onLogout
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -64,6 +80,16 @@ fun RegisterScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                TextButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Volver")
+                }
+                Spacer(Modifier.height(8.dp))
+
                 VoiceTextField(
                     value = state.regRun,
                     onValueChange = viewModel::onRegRunChange,

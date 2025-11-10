@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import com.example.pasteleriaapp.ui.screen.productos.CategoriasScreen
 import com.example.pasteleriaapp.ui.screen.productos.ProductoDetalleScreen
 import com.example.pasteleriaapp.ui.screen.productos.ProductoFormScreen
 import com.example.pasteleriaapp.ui.screen.productos.ProductoListScreen
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
@@ -80,6 +82,42 @@ fun AppNavGraph(
     val pedidoFactory = PedidoViewModelFactory(pedidoRepository, carritoRepository)
     val pedidoViewModel: PedidoViewModel = viewModel(factory = pedidoFactory)
 
+    val authState by authViewModel.uiState.collectAsState()
+    val carritoUiState by carritoViewModel.uiState.collectAsState()
+
+    val isLoggedIn = authState.usuarioActual != null
+    val badgeCount = carritoUiState.totalArticulos
+
+    LaunchedEffect(authState.logoutSuccess) {
+        if (authState.logoutSuccess) {
+            navController.navigate(Rutas.HOME) {
+                popUpTo(Rutas.HOME) { inclusive = true }
+            }
+            authViewModel.resetNavegacion()
+        }
+    }
+
+    val onLogout: (() -> Unit)? = if (isLoggedIn) {
+        { authViewModel.logout(ctx) }
+    } else null
+
+    val openInstagram: () -> Unit = {
+        val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com"))
+        if (instagramIntent.resolveActivity(ctx.packageManager) != null) {
+            ctx.startActivity(instagramIntent)
+        }
+    }
+
+    val topBarActions = AppTopBarActions(
+        onNavigateToCatalogo = { navController.navigateSingleTop(Rutas.CATEGORIAS) },
+        onNavigateToBlog = { navController.navigateSingleTop(Rutas.BLOG) },
+        onNavigateToNosotros = { navController.navigateSingleTop(Rutas.NOSOTROS) },
+        onOpenInstagram = openInstagram,
+        onCartClick = { navController.navigateSingleTop(Rutas.CARRITO) },
+        onProfileClick = { navController.navigateSingleTop(Rutas.PERFIL) },
+        onLoginClick = { navController.navigateSingleTop(Rutas.AUTH_FLOW) }
+    )
+
     NavHost(
         navController = navController, startDestination = Rutas.HOME, modifier = modifier
     ) {
@@ -88,30 +126,25 @@ fun AppNavGraph(
             HomeScreen(
                 authViewModel = authViewModel,
                 carritoViewModel = carritoViewModel,
-                onNavigateToAuth = { navController.navigate(Rutas.AUTH_FLOW) },
-                onNavigateToPerfil = { navController.navigate(Rutas.PERFIL) },
-                onNavigateToCatalogo = { navController.navigate(Rutas.CATEGORIAS) },
-                onNavigateToNosotros = { navController.navigate(Rutas.NOSOTROS) },
-                onNavigateToCarrito = { navController.navigate(Rutas.CARRITO) },
-                onNavigateToBlog = {
-                    navController.navigate(Rutas.BLOG)
-                },
-                onOpenInstagram = {
-                    val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com"))
-                    if (instagramIntent.resolveActivity(ctx.packageManager) != null) {
-                        ctx.startActivity(instagramIntent)
-                    }
-                },
-                onLogoutSuccess = {
-                    navController.navigate(Rutas.HOME) {
-                        popUpTo(Rutas.HOME) { inclusive = true }
-                    }
-                }
+                onNavigateToAuth = { navController.navigateSingleTop(Rutas.AUTH_FLOW) },
+                onNavigateToPerfil = { navController.navigateSingleTop(Rutas.PERFIL) },
+                onNavigateToCatalogo = { navController.navigateSingleTop(Rutas.CATEGORIAS) },
+                onNavigateToNosotros = { navController.navigateSingleTop(Rutas.NOSOTROS) },
+                onNavigateToCarrito = { navController.navigateSingleTop(Rutas.CARRITO) },
+                onNavigateToBlog = { navController.navigateSingleTop(Rutas.BLOG) },
+                onOpenInstagram = openInstagram
             )
         }
 
         // --- 2. FLUJO DE AUTENTICACIÓN ---
-        authGraph(navController, authViewModel)
+        authGraph(
+            navController = navController,
+            authViewModel = authViewModel,
+            badgeCount = badgeCount,
+            isLoggedIn = isLoggedIn,
+            topBarActions = topBarActions,
+            onLogout = onLogout
+        )
 
         // --- 3. RUTA CATEGORIAS ---
         composable(Rutas.CATEGORIAS) {
@@ -120,7 +153,10 @@ fun AppNavGraph(
             CategoriasScreen(
                 viewModel = viewModel,
                 onCategoriaClick = { id -> navController.navigate(Rutas.obtenerRutaProductos(id)) },
-                onCarritoClick = { navController.navigate(Rutas.CARRITO) }
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -145,7 +181,11 @@ fun AppNavGraph(
                 },
                 onAddProductoClick = {
                     navController.navigate(Rutas.obtenerRutaNuevoProducto(idCategoria))
-                }
+                },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -172,7 +212,11 @@ fun AppNavGraph(
                 onBackClick = { navController.popBackStack() },
                 onEditProductoClick = {
                     navController.navigate(Rutas.obtenerRutaEditarProducto(it))
-                }
+                },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -217,7 +261,11 @@ fun AppNavGraph(
                 onBackClick = { navController.popBackStack() },
                 onNavigateToCheckout = {
                     navController.navigate(Rutas.CHECKOUT)
-                }
+                },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -229,7 +277,11 @@ fun AppNavGraph(
                 onBackClick = { navController.popBackStack() },
                 onNavigateToMisPedidos = {
                     navController.navigate(Rutas.MIS_PEDIDOS)
-                }
+                },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -255,7 +307,11 @@ fun AppNavGraph(
                         popUpTo(Rutas.HOME) { inclusive = true }
                     }
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -267,7 +323,11 @@ fun AppNavGraph(
                 onPedidoClick = { idPedido ->
                     navController.navigate(Rutas.obtenerRutaDetallePedido(idPedido))
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -292,7 +352,11 @@ fun AppNavGraph(
                 onPostClick = { postId ->
                     navController.navigate(Rutas.obtenerRutaBlogDetalle(postId))
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
@@ -314,7 +378,11 @@ fun AppNavGraph(
 
 private fun NavGraphBuilder.authGraph(
     navController: NavHostController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     navigation(
         startDestination = Rutas.LOGIN, route = Rutas.AUTH_FLOW
@@ -339,7 +407,11 @@ private fun NavGraphBuilder.authGraph(
             RegisterScreen(
                 viewModel = authViewModel,
                 onRegisterSuccess = { navController.popBackStack() },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
     }
@@ -351,5 +423,11 @@ private fun PlaceholderScreen(texto: String, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
         Text(text = texto, style = MaterialTheme.typography.headlineMedium)
+    }
+}
+
+private fun NavHostController.navigateSingleTop(route: String) {
+    navigate(route) {
+        launchSingleTop = true
     }
 }

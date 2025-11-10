@@ -8,54 +8,59 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person // <-- NUEVO IMPORT
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment // <-- NUEVO IMPORT
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip // <-- NUEVO IMPORT
-import androidx.compose.ui.layout.ContentScale // <-- NUEVO IMPORT
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage // <-- ¡IMPORTANTE! PARA MOSTRAR LA FOTO
+import coil.compose.AsyncImage
 import com.example.pasteleriaapp.domain.model.TipoUsuario
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
     onNavigateToEdit: () -> Unit,
     onBackClick: () -> Unit,
-    onNavigateToMisPedidos: () -> Unit
+    onNavigateToMisPedidos: () -> Unit,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     val state by authViewModel.uiState.collectAsState()
     val usuario = state.usuarioActual
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToEdit) {
-                        Icon(Icons.Default.Edit, "Editar Perfil")
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        badgeCount = badgeCount,
+        isLoggedIn = isLoggedIn,
+        topBarActions = topBarActions,
+        pageTitle = "Mi Perfil",
+        onLogout = onLogout
     ) { paddingValues ->
         if (usuario == null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("No se encontró el usuario.")
             }
-            return@Scaffold
+            return@AppScaffold
         }
 
         Column(
@@ -63,11 +68,28 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            // Centramos la foto y el nombre
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onBackClick) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Volver")
+                }
+                TextButton(onClick = onNavigateToEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Editar Perfil")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Editar")
+                }
+            }
 
-            // --- INICIO UI MOSTRAR FOTO ---
+            Spacer(Modifier.height(16.dp))
+
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -77,7 +99,6 @@ fun ProfileScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (state.fotoUri != null) {
-                    // Usamos Coil para cargar la foto guardada
                     AsyncImage(
                         model = state.fotoUri,
                         contentDescription = "Foto de perfil",
@@ -85,7 +106,6 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // Icono por defecto si no hay foto
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Sin foto de perfil",
@@ -94,11 +114,9 @@ fun ProfileScreen(
                     )
                 }
             }
-            // --- FIN UI MOSTRAR FOTO ---
 
             Spacer(Modifier.height(16.dp))
 
-            // Nombre del usuario (centrado)
             Text(
                 "${usuario.nombre} ${usuario.apellidos}",
                 style = MaterialTheme.typography.headlineSmall,
@@ -107,7 +125,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // --- Inicio de la información (alineada a la izquierda) ---
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Datos Personales", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(16.dp))
@@ -133,7 +150,6 @@ fun ProfileScreen(
                 }
                 Spacer(Modifier.height(8.dp))
 
-                // --- Lógica condicional ---
                 when (usuario.tipoUsuario) {
                     TipoUsuario.superAdmin, TipoUsuario.Administrador, TipoUsuario.Vendedor -> {
                         Button(
@@ -152,7 +168,6 @@ fun ProfileScreen(
     }
 }
 
-// ... (InfoRow composable sin cambios) ...
 @Composable
 fun InfoRow(label: String, value: String) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {

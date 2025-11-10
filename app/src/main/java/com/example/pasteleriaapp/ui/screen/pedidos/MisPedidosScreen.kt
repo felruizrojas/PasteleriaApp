@@ -9,14 +9,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,63 +23,74 @@ import com.example.pasteleriaapp.domain.model.Pedido
 import com.example.pasteleriaapp.domain.model.descripcion
 import com.example.pasteleriaapp.domain.model.displayName
 import com.example.pasteleriaapp.domain.model.progressFraction
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisPedidosScreen(
     authViewModel: AuthViewModel,
     pedidoViewModel: PedidoViewModel,
     onPedidoClick: (Int) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val pedidosState by pedidoViewModel.misPedidosState.collectAsState()
 
-    // Cargar pedidos cuando la pantalla se inicia
     LaunchedEffect(authState.usuarioActual) {
         authState.usuarioActual?.let {
             pedidoViewModel.cargarMisPedidos(it.idUsuario)
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mis Pedidos") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        badgeCount = badgeCount,
+        isLoggedIn = isLoggedIn,
+        topBarActions = topBarActions,
+        pageTitle = "Mis Pedidos",
+        onLogout = onLogout
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .padding(paddingValues)
         ) {
-            when {
-                pedidosState.estaCargando -> CircularProgressIndicator()
-                pedidosState.error != null -> Text("Error: ${pedidosState.error}")
-                pedidosState.pedidos.isNotEmpty() -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(pedidosState.pedidos) { pedido ->
-                            PedidoRow(pedido = pedido, onClick = { onPedidoClick(pedido.idPedido) })
+            TextButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                Spacer(Modifier.width(8.dp))
+                Text("Volver")
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    pedidosState.estaCargando -> CircularProgressIndicator()
+                    pedidosState.error != null -> Text("Error: ${pedidosState.error}")
+                    pedidosState.pedidos.isNotEmpty() -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(pedidosState.pedidos) { pedido ->
+                                PedidoRow(pedido = pedido, onClick = { onPedidoClick(pedido.idPedido) })
+                            }
                         }
                     }
-                }
-                else -> {
-                    Text("Aún no has realizado pedidos.")
+                    else -> {
+                        Text("Aún no has realizado pedidos.")
+                    }
                 }
             }
         }

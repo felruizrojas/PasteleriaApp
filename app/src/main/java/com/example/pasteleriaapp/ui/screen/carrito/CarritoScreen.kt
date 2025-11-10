@@ -21,15 +21,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,38 +45,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.CarritoItem
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CarritoScreen(
     viewModel: CarritoViewModel,
     onBackClick: () -> Unit,
-    onNavigateToCheckout: () -> Unit // <-- ¡CAMBIO IMPORTANTE! (Paso 8)
+    onNavigateToCheckout: () -> Unit,
+    badgeCount: Int,
+    isLoggedIn: Boolean,
+    topBarActions: AppTopBarActions,
+    onLogout: (() -> Unit)?
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var itemEnEdicion by remember { mutableStateOf<CarritoItem?>(null) }
     var mensajeTemporal by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi Carrito") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    }
-                },
-                actions = {
-                    if (state.hayItems) {
-                        IconButton(onClick = { viewModel.limpiarCarrito() }) {
-                            Icon(Icons.Default.Delete, "Vaciar carrito")
-                        }
-                    }
-                }
-            )
-        },
+    AppScaffold(
+        badgeCount = badgeCount,
+        isLoggedIn = isLoggedIn,
+        topBarActions = topBarActions,
+        pageTitle = "Mi Carrito",
+        onLogout = onLogout,
         bottomBar = {
             if (state.hayItems) {
                 CarritoBottomBar(
@@ -89,40 +79,66 @@ fun CarritoScreen(
             }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .padding(paddingValues)
         ) {
-            when {
-                state.estaCargando -> CircularProgressIndicator()
-                state.error != null -> Text("Error: ${state.error}")
-                state.hayItems -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(state.items, key = { it.idCarrito }) { item ->
-                            CarritoItemRow(
-                                item = item,
-                                onActualizarCantidad = { nuevaCantidad ->
-                                    viewModel.actualizarCantidad(item, nuevaCantidad)
-                                },
-                                onEliminar = {
-                                    viewModel.eliminarItem(item)
-                                },
-                                onEditarMensaje = {
-                                    itemEnEdicion = item
-                                    mensajeTemporal = item.mensajePersonalizado
-                                }
-                            )
-                        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onBackClick) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Volver")
+                }
+
+                if (state.hayItems) {
+                    IconButton(onClick = { viewModel.limpiarCarrito() }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Vaciar carrito")
                     }
                 }
-                else -> {
-                    Text("Tu carrito está vacío.", style = MaterialTheme.typography.bodyLarge)
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    state.estaCargando -> CircularProgressIndicator()
+                    state.error != null -> Text("Error: ${state.error}")
+                    state.hayItems -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.items, key = { it.idCarrito }) { item ->
+                                CarritoItemRow(
+                                    item = item,
+                                    onActualizarCantidad = { nuevaCantidad ->
+                                        viewModel.actualizarCantidad(item, nuevaCantidad)
+                                    },
+                                    onEliminar = {
+                                        viewModel.eliminarItem(item)
+                                    },
+                                    onEditarMensaje = {
+                                        itemEnEdicion = item
+                                        mensajeTemporal = item.mensajePersonalizado
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        Text("Tu carrito está vacío.", style = MaterialTheme.typography.bodyLarge)
+                    }
                 }
             }
         }
