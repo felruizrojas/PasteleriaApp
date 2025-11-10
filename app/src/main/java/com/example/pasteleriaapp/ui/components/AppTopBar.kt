@@ -4,9 +4,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -61,53 +66,57 @@ fun AppTopBar(
     CenterAlignedTopAppBar(
         modifier = modifier,
         navigationIcon = {
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menú")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menú")
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Catálogo") },
+                            onClick = {
+                                menuExpanded = false
+                                actions.onNavigateToCatalogo()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Blog") },
+                            onClick = {
+                                menuExpanded = false
+                                actions.onNavigateToBlog()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Nosotros") },
+                            onClick = {
+                                menuExpanded = false
+                                actions.onNavigateToNosotros()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Instagram") },
+                            onClick = {
+                                menuExpanded = false
+                                actions.onOpenInstagram()
+                            }
+                        )
+                    }
                 }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Catálogo") },
-                        onClick = {
-                            menuExpanded = false
-                            actions.onNavigateToCatalogo()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Blog") },
-                        onClick = {
-                            menuExpanded = false
-                            actions.onNavigateToBlog()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Nosotros") },
-                        onClick = {
-                            menuExpanded = false
-                            actions.onNavigateToNosotros()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Instagram") },
-                        onClick = {
-                            menuExpanded = false
-                            actions.onOpenInstagram()
-                        }
-                    )
-                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Image(
+                    painter = painterResource(id = R.drawable.logo_nav),
+                    contentDescription = "Pastelería Mil Sabores",
+                    modifier = Modifier.size(38.dp),
+                    contentScale = ContentScale.Fit
+                )
             }
         },
-        title = {
-            Image(
-                painter = painterResource(id = R.drawable.logo_nav),
-                contentDescription = "Pastelería Mil Sabores",
-                modifier = Modifier,
-                contentScale = ContentScale.Fit
-            )
-        },
+        title = {},
         actions = {
             BadgedBox(
                 badge = {

@@ -60,6 +60,8 @@ import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModelFactory
 import com.example.pasteleriaapp.ui.screen.nosotros.NosotrosScreen
 import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModel
 import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModelFactory
+import com.example.pasteleriaapp.ui.screen.admin.AdminCatalogContent
+import com.example.pasteleriaapp.ui.viewmodel.AdminCatalogViewModelFactory
 
 @Composable
 fun AppNavGraph(
@@ -92,7 +94,9 @@ fun AppNavGraph(
     val isLoggedIn = authState.usuarioActual != null
     val badgeCount = carritoUiState.totalArticulos
     val puedeAdministrar = authState.usuarioActual?.let {
-        it.tipoUsuario == TipoUsuario.superAdmin || it.tipoUsuario == TipoUsuario.Administrador
+        it.tipoUsuario == TipoUsuario.superAdmin ||
+                it.tipoUsuario == TipoUsuario.Administrador ||
+                it.tipoUsuario == TipoUsuario.Vendedor
     } == true
 
     LaunchedEffect(authState.logoutSuccess) {
@@ -124,7 +128,7 @@ fun AppNavGraph(
         onProfileClick = { navController.navigateSingleTop(Rutas.PERFIL) },
         onLoginClick = { navController.navigateSingleTop(Rutas.AUTH_FLOW) },
         onNavigateToAdmin = if (puedeAdministrar) {
-            { navController.navigateSingleTop(Rutas.ADMIN_USUARIOS) }
+            { navController.navigateSingleTop(Rutas.ADMIN_CATALOGO) }
         } else null
     )
 
@@ -289,7 +293,7 @@ fun AppNavGraph(
                     navController.navigate(Rutas.MIS_PEDIDOS)
                 },
                 onNavigateToAdminPanel = {
-                    navController.navigateSingleTop(Rutas.ADMIN_USUARIOS)
+                    navController.navigateSingleTop(Rutas.ADMIN_CATALOGO)
                 },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
@@ -303,7 +307,8 @@ fun AppNavGraph(
             val usuarioActual = authState.usuarioActual
             if (usuarioActual == null ||
                 (usuarioActual.tipoUsuario != TipoUsuario.superAdmin &&
-                        usuarioActual.tipoUsuario != TipoUsuario.Administrador)
+                        usuarioActual.tipoUsuario != TipoUsuario.Administrador &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Vendedor)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -322,6 +327,41 @@ fun AppNavGraph(
                     isLoggedIn = isLoggedIn,
                     topBarActions = topBarActions,
                     onLogout = onLogout
+                )
+            }
+        }
+
+        // --- ADMIN: CATALOGO (categorías y productos) ---
+        composable(Rutas.ADMIN_CATALOGO) {
+            val usuarioActual = authState.usuarioActual
+            if (usuarioActual == null ||
+                (usuarioActual.tipoUsuario != TipoUsuario.superAdmin &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Administrador &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Vendedor)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tienes permiso para acceder a esta sección.")
+                }
+            } else {
+                val factory = AdminCatalogViewModelFactory(categoriaRepository, productoRepository)
+                val adminCatalogViewModel: androidx.lifecycle.ViewModel = viewModel(factory = factory)
+                @Suppress("UNCHECKED_CAST")
+                AdminCatalogContent(
+                    viewModel = adminCatalogViewModel as com.example.pasteleriaapp.ui.viewmodel.AdminCatalogViewModel,
+                    onAgregarProducto = { idCategoria -> navController.navigate(Rutas.obtenerRutaNuevoProducto(idCategoria)) },
+                    onEditarProducto = { idProducto, idCategoria -> navController.navigate(Rutas.obtenerRutaEditarProducto(idProducto)) },
+                    onNavigateAdmin = { destino ->
+                        when (destino) {
+                            "usuarios" -> navController.navigateSingleTop(Rutas.ADMIN_USUARIOS)
+                            "productos" -> navController.navigateSingleTop(Rutas.CATEGORIAS)
+                            "pedidos" -> navController.navigateSingleTop(Rutas.MIS_PEDIDOS)
+                            "tienda" -> navController.navigateSingleTop(Rutas.HOME)
+                            else -> Unit
+                        }
+                    }
                 )
             }
         }

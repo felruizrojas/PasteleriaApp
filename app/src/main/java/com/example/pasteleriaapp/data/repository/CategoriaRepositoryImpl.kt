@@ -19,6 +19,13 @@ class CategoriaRepositoryImpl (
             }
     }
 
+    override fun obtenerCategoriasAdmin(): Flow<List<Categoria>> {
+        return categoriaDao.obtenerCategoriasAdmin()
+            .map { entities ->
+                entities.map { it.toCategoria() }
+            }
+    }
+
     override suspend fun obtenerCategoriaPorId(idCategoria: Int): Categoria? {
         return categoriaDao.obtenerCategoriaPorId(idCategoria)?.toCategoria()
     }
@@ -42,5 +49,9 @@ class CategoriaRepositoryImpl (
 
     override suspend fun eliminarTodasLasCategorias() {
         categoriaDao.eliminarTodasLasCategorias()
+    }
+
+    override suspend fun actualizarEstadoBloqueo(idCategoria: Int, estaBloqueada: Boolean) {
+        categoriaDao.actualizarEstadoBloqueo(idCategoria, estaBloqueada)
     }
 }

@@ -9,5 +9,6 @@ data class Producto (
     val descripcionProducto: String,
     val imagenProducto: String,
     val stockProducto: Int,
-    val stockCriticoProducto: Int
+    val stockCriticoProducto: Int,
+    val estaBloqueado: Boolean = false
 )

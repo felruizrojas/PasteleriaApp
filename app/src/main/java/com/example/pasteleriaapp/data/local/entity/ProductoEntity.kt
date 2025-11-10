@@ -1,5 +1,6 @@
 package com.example.pasteleriaapp.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.pasteleriaapp.domain.model.Producto
@@ -16,7 +17,9 @@ data class ProductoEntity(
     val descripcionProducto: String,
     val imagenProducto: String,
     val stockProducto: Int,
-    val stockCriticoProducto: Int
+    val stockCriticoProducto: Int,
+    @ColumnInfo(defaultValue = "0")
+    val estaBloqueado: Boolean = false
 )
 
 fun ProductoEntity.toProducto() = Producto(
@@ -28,7 +31,8 @@ fun ProductoEntity.toProducto() = Producto(
     descripcionProducto = descripcionProducto,
     imagenProducto = imagenProducto,
     stockProducto = stockProducto,
-    stockCriticoProducto = stockCriticoProducto
+    stockCriticoProducto = stockCriticoProducto,
+    estaBloqueado = estaBloqueado
 )
 
 fun Producto.toProductoEntity() = ProductoEntity(
@@ -40,5 +44,6 @@ fun Producto.toProductoEntity() = ProductoEntity(
     descripcionProducto = descripcionProducto,
     imagenProducto = imagenProducto,
     stockProducto = stockProducto,
-    stockCriticoProducto = stockCriticoProducto
+    stockCriticoProducto = stockCriticoProducto,
+    estaBloqueado = estaBloqueado
 )

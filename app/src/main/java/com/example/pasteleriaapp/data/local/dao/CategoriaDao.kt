@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoriaDao {
-    @Query("SELECT * FROM categoria ORDER BY nombreCategoria ASC")
+    @Query("SELECT * FROM categoria WHERE estaBloqueada = 0 ORDER BY nombreCategoria ASC")
     fun obtenerCategorias(): Flow<List<CategoriaEntity>>
+
+    @Query("SELECT * FROM categoria ORDER BY nombreCategoria ASC")
+    fun obtenerCategoriasAdmin(): Flow<List<CategoriaEntity>>
 
     @Query("SELECT * FROM categoria WHERE idCategoria = :idCategoria")
     suspend fun obtenerCategoriaPorId(idCategoria: Int): CategoriaEntity?
@@ -32,4 +35,7 @@ interface CategoriaDao {
 
     @Query("DELETE FROM categoria")
     suspend fun eliminarTodasLasCategorias()
+
+    @Query("UPDATE categoria SET estaBloqueada = :estaBloqueada WHERE idCategoria = :idCategoria")
+    suspend fun actualizarEstadoBloqueo(idCategoria: Int, estaBloqueada: Boolean)
 }

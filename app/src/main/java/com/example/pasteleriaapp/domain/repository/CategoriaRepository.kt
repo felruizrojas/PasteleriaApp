@@ -7,6 +7,8 @@ interface CategoriaRepository {
 
     fun obtenerCategorias(): Flow<List<Categoria>>
 
+    fun obtenerCategoriasAdmin(): Flow<List<Categoria>>
+
     suspend fun obtenerCategoriaPorId(idCategoria: Int): Categoria?
 
     suspend fun insertarCategoria(categoria: Categoria)
@@ -18,4 +20,6 @@ interface CategoriaRepository {
     suspend fun eliminarCategoria(categoria: Categoria)
 
     suspend fun eliminarTodasLasCategorias()
+
+    suspend fun actualizarEstadoBloqueo(idCategoria: Int, estaBloqueada: Boolean)
 }

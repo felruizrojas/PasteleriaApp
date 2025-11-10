@@ -17,6 +17,7 @@ object Rutas {
     const val CHECKOUT = "checkout" // <-- RUTA NUEVA
     const val MIS_PEDIDOS = "pedidos" // <-- RUTA NUEVA
     const val ADMIN_USUARIOS = "admin_usuarios"
+    const val ADMIN_CATALOGO = "admin_catalogo"
     const val BLOG = "blog"
     const val ARG_POST_ID = "postId"
     const val BLOG_DETALLE_RUTA = "$BLOG/{$ARG_POST_ID}"

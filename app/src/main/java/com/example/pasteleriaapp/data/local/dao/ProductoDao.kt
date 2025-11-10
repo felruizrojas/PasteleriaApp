@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductoDao {
-    @Query("SELECT * FROM producto ORDER BY nombreProducto ASC")
+    @Query("SELECT * FROM producto WHERE estaBloqueado = 0 ORDER BY nombreProducto ASC")
     fun obtenerProductos(): Flow<List<ProductoEntity>>
 
-    @Query("SELECT * FROM producto WHERE idCategoria = :idCategoria ORDER BY nombreProducto ASC")
+    @Query("SELECT * FROM producto WHERE idCategoria = :idCategoria AND estaBloqueado = 0 ORDER BY nombreProducto ASC")
     fun obtenerProductosPorCategoria(idCategoria: Int): Flow<List<ProductoEntity>>
+
+    @Query("SELECT * FROM producto WHERE idCategoria = :idCategoria ORDER BY nombreProducto ASC")
+    fun obtenerProductosPorCategoriaAdmin(idCategoria: Int): Flow<List<ProductoEntity>>
 
     @Query("SELECT * FROM producto WHERE idProducto = :idProducto")
     suspend fun obtenerProductoPorId(idProducto: Int): ProductoEntity?
@@ -37,4 +40,7 @@ interface ProductoDao {
 
     @Query("DELETE FROM producto")
     suspend fun eliminarTodosLosProductos()
+
+    @Query("UPDATE producto SET estaBloqueado = :estaBloqueado WHERE idProducto = :idProducto")
+    suspend fun actualizarEstadoBloqueo(idProducto: Int, estaBloqueado: Boolean)
 }

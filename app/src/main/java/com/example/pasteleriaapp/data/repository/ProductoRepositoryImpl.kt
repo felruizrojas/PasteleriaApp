@@ -30,6 +30,13 @@ class ProductoRepositoryImpl (
             }
     }
 
+    override fun obtenerProductosPorCategoriaAdmin(idCategoria: Int): Flow<List<Producto>> {
+        return productoDao.obtenerProductosPorCategoriaAdmin(idCategoria)
+            .map { entities ->
+                entities.map { it.toProducto() }
+            }
+    }
+
     override suspend fun insertarProducto(producto: Producto) {
         productoDao.insertarProducto(producto.toProductoEntity())
     }
@@ -54,5 +61,9 @@ class ProductoRepositoryImpl (
 
     override suspend fun eliminarTodasLosProductos() {
         productoDao.eliminarTodosLosProductos()
+    }
+
+    override suspend fun actualizarEstadoBloqueo(idProducto: Int, estaBloqueado: Boolean) {
+        productoDao.actualizarEstadoBloqueo(idProducto, estaBloqueado)
     }
 }

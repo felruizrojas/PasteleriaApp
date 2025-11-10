@@ -16,6 +16,7 @@ data class ProductoFormUiState(
     val descripcion: String = "",
     val stock: String = "",
     val codigo: String = "",
+    val estaBloqueado: Boolean = false,
 
     // Estado de la UI
     val tituloPantalla: String = "Nuevo Producto",
@@ -37,6 +38,7 @@ fun Producto.toFormUiState(): ProductoFormUiState {
         descripcion = this.descripcionProducto,
         stock = this.stockProducto.toString(),
         codigo = this.codigoProducto,
-        tituloPantalla = "Editar Producto"
+        tituloPantalla = "Editar Producto",
+        estaBloqueado = this.estaBloqueado
     )
 }

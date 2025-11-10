@@ -54,6 +54,7 @@ class ProductoFormViewModel(
                             descripcion = producto.descripcionProducto, // <-- Aquí cargará la descripción
                             stock = producto.stockProducto.toString(),
                             codigo = producto.codigoProducto,
+                            estaBloqueado = producto.estaBloqueado,
                             tituloPantalla = "Editar Producto",
                             estaCargando = false // <-- Marcamos como 'no cargando'
                         )
@@ -100,7 +101,8 @@ class ProductoFormViewModel(
             codigoProducto = state.codigo.trim(),
             stockProducto = stockInt,
             stockCriticoProducto = 10,
-            imagenProducto = "" // TODO: Añadir lógica para imagen
+            imagenProducto = "", // TODO: Añadir lógica para imagen
+            estaBloqueado = state.estaBloqueado
         )
 
         viewModelScope.launch {
