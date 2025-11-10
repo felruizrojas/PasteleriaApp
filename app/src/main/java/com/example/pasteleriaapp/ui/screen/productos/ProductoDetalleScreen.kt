@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+// import androidx.compose.material3.OutlinedTextField // <-- No se usa
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +46,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Producto
+// --- ¡¡NUEVO IMPORT!! ---
+import com.example.pasteleriaapp.ui.screen.auth.VoiceTextField
 import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +60,7 @@ fun ProductoDetalleScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // LaunchedEffect para mostrar el Toast
+    // --- CÓDIGO CORREGIDO: Usa tus variables originales ---
     LaunchedEffect(state.itemAgregado) {
         if (state.itemAgregado) {
             Toast.makeText(
@@ -122,7 +124,7 @@ private fun ProductoDetalle(
     val context = LocalContext.current
     val imageResId = painterResourceFromName(context, producto.imagenProducto)
 
-    // --- CORREGIDO: Solo hay UNA declaración ---
+    // El mensaje personalizado se maneja localmente (tu lógica original)
     var mensajePersonalizado by remember { mutableStateOf("") }
 
     Column(
@@ -154,7 +156,7 @@ private fun ProductoDetalle(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "$${producto.precioProducto}",
+                text = "$${"%.0f".format(producto.precioProducto)}",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -174,19 +176,17 @@ private fun ProductoDetalle(
                 text = "Stock disponible: ${producto.stockProducto} unidades",
                 style = MaterialTheme.typography.bodySmall
             )
+            Spacer(Modifier.height(24.dp))
 
-            // --- INICIO DE NUEVOS COMPONENTES ---
-
-            Spacer(Modifier.height(24.dp)) // Un espacio extra
-
-            // 1. Área de Mensaje Personalizado
-            OutlinedTextField(
+            // --- ¡¡CAMPO ACTUALIZADO A VoiceTextField!! ---
+            VoiceTextField(
                 value = mensajePersonalizado,
                 onValueChange = { mensajePersonalizado = it },
-                label = { Text("Mensaje Personalizado (Opcional)") },
+                label = "Mensaje Personalizado (Opcional)",
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true // Cambia a false si quieres múltiples líneas
+                singleLine = false // Cambiado a false para mensajes largos
             )
+            // --- FIN DEL CAMBIO ---
 
             Spacer(Modifier.height(16.dp))
 
@@ -223,21 +223,19 @@ private fun ProductoDetalle(
                 )
                 Text("Compartir")
             }
-
-            // --- FIN DE NUEVOS COMPONENTES ---
         }
     }
 }
 
 /**
- * --- NUEVA FUNCIÓN AUXILIAR ---
+ * --- FUNCIÓN AUXILIAR ---
  * Crea un Intent de Android para compartir el texto del producto.
  */
 private fun compartirProducto(context: Context, producto: Producto, mensaje: String) {
     val textoCompartir = """
         ¡Mira este increíble producto de Pastelería Mil Sabores!
         
-        ${producto.nombreProducto} - $${producto.precioProducto}
+        ${producto.nombreProducto} - $${"%.0f".format(producto.precioProducto)}
         
         ${producto.descripcionProducto}
         

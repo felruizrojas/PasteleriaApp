@@ -52,6 +52,7 @@ import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModel
 import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModelFactory
+import com.example.pasteleriaapp.ui.screen.nosotros.NosotrosScreen
 
 @Composable
 fun AppNavGraph(
@@ -190,9 +191,12 @@ fun AppNavGraph(
             )
         }
 
-        // --- 7. RUTA NOSOTROS (Placeholder) ---
+// --- 7. RUTA NOSOTROS (MODIFICADA) ---
         composable(Rutas.NOSOTROS) {
-            PlaceholderScreen(texto = "Pantalla 'Nosotros'")
+            // PlaceholderScreen(texto = "Pantalla 'Nosotros'") // <-- ELIMINADO
+            NosotrosScreen( // <-- AÑADIDO
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         // --- 8. RUTA CARRITO ---

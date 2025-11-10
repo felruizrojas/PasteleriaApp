@@ -15,23 +15,24 @@ data class UsuarioEntity(
     val apellidos: String,
     val correo: String,
     val fechaNacimiento: String,
-    val tipoUsuario: TipoUsuario, // Room usará el TypeConverter
+    val tipoUsuario: TipoUsuario,
     val region: String,
     val comuna: String,
     val direccion: String,
     val contrasena: String,
 
-// --- CAMPOS NUEVOS AÑADIDOS ---
-    // (Valor por defecto 0 = false)
     @ColumnInfo(defaultValue = "0")
     val tieneDescuentoEdad: Boolean = false,
-
     @ColumnInfo(defaultValue = "0")
     val tieneDescuentoCodigo: Boolean = false,
-
     @ColumnInfo(defaultValue = "0")
-    val esEstudianteDuoc: Boolean = false
+    val esEstudianteDuoc: Boolean = false,
+
+    @ColumnInfo(defaultValue = "NULL")
+    val fotoUrl: String? = null // <-- CAMPO NUEVO AÑADIDO
 )
+
+// --- MAPPERS ACTUALIZADOS ---
 
 fun UsuarioEntity.toUsuario() = Usuario(
     idUsuario = idUsuario,
@@ -45,10 +46,10 @@ fun UsuarioEntity.toUsuario() = Usuario(
     comuna = comuna,
     direccion = direccion,
     contrasena = contrasena,
-
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
-    esEstudianteDuoc = esEstudianteDuoc
+    esEstudianteDuoc = esEstudianteDuoc,
+    fotoUrl = fotoUrl // <-- AÑADIDO
 )
 
 fun Usuario.toUsuarioEntity() = UsuarioEntity(
@@ -63,8 +64,8 @@ fun Usuario.toUsuarioEntity() = UsuarioEntity(
     comuna = comuna,
     direccion = direccion,
     contrasena = contrasena,
-
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
-    esEstudianteDuoc = esEstudianteDuoc
+    esEstudianteDuoc = esEstudianteDuoc,
+    fotoUrl = fotoUrl // <-- AÑADIDO
 )

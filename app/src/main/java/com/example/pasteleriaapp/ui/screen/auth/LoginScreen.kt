@@ -25,7 +25,7 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Navega cuando el login es exitoso
+    // ... (LaunchedEffects sin cambios) ...
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
             Toast.makeText(context, "¡Bienvenido/a ${state.usuarioActual?.nombre}!", Toast.LENGTH_SHORT).show()
@@ -33,8 +33,6 @@ fun LoginScreen(
             onLoginSuccess()
         }
     }
-
-    // Muestra errores como un Toast
     LaunchedEffect(state.error) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -59,19 +57,16 @@ fun LoginScreen(
                 Text("Ingresa a tu cuenta", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(24.dp))
 
-                OutlinedTextField(
+                // --- CAMPO DE CORREO ACTUALIZADO A VoiceTextField ---
+                VoiceTextField(
                     value = state.loginCorreo,
                     onValueChange = viewModel::onLoginCorreoChange,
-                    label = { Text("Correo Electrónico") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    ),
-                    singleLine = true
+                    label = "Correo Electrónico",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(16.dp))
 
+                // --- CAMPO DE CONTRASEÑA (Sin cambios) ---
                 PasswordTextField(
                     value = state.loginContrasena,
                     onValueChange = viewModel::onLoginContrasenaChange,

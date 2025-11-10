@@ -27,7 +27,7 @@ fun RegisterScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Navega cuando el registro es exitoso
+    // ... (LaunchedEffects sin cambios) ...
     LaunchedEffect(state.registerSuccess) {
         if (state.registerSuccess) {
             Toast.makeText(context, "Registro exitoso. Inicia sesión.", Toast.LENGTH_LONG).show()
@@ -35,8 +35,6 @@ fun RegisterScreen(
             onRegisterSuccess()
         }
     }
-
-    // Muestra errores como un Toast
     LaunchedEffect(state.error) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -64,79 +62,72 @@ fun RegisterScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
+                // --- CAMPOS DE TEXTO ACTUALIZADOS A VoiceTextField ---
+                VoiceTextField(
                     value = state.regRun,
                     onValueChange = viewModel::onRegRunChange,
-                    label = { Text("RUN (ej: 12345678-9)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "RUN (ej: 12345678-9)",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regNombre,
                     onValueChange = viewModel::onRegNombreChange,
-                    label = { Text("Nombre") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Nombre",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regApellidos,
                     onValueChange = viewModel::onRegApellidosChange,
-                    label = { Text("Apellidos") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Apellidos",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regCorreo,
                     onValueChange = viewModel::onRegCorreoChange,
-                    label = { Text("Correo Electrónico") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
+                    label = "Correo Electrónico",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regFechaNacimiento,
                     onValueChange = viewModel::onRegFechaNacimientoChange,
-                    label = { Text("Fecha Nacimiento (DD-MM-AAAA)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Fecha Nacimiento (DD-MM-AAAA)",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regRegion,
                     onValueChange = viewModel::onRegRegionChange,
-                    label = { Text("Región") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Región",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regComuna,
                     onValueChange = viewModel::onRegComunaChange,
-                    label = { Text("Comuna") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Comuna",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
+                VoiceTextField(
                     value = state.regDireccion,
                     onValueChange = viewModel::onRegDireccionChange,
-                    label = { Text("Dirección") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = "Dirección",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(16.dp))
 
+                // --- CAMPOS DE CONTRASEÑA (Sin cambios) ---
                 PasswordTextField(
                     value = state.regContrasena,
                     onValueChange = viewModel::onRegContrasenaChange,
@@ -151,6 +142,15 @@ fun RegisterScreen(
                     label = "Repetir Contraseña",
                     modifier = Modifier.fillMaxWidth(),
                     isError = state.regContrasena != state.regRepetirContrasena
+                )
+                Spacer(Modifier.height(16.dp))
+
+                // --- CAMPO DE CÓDIGO (Actualizado) ---
+                VoiceTextField(
+                    value = state.regCodigoPromo,
+                    onValueChange = viewModel::onRegCodigoPromoChange,
+                    label = "Código Promocional (Opcional)",
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(24.dp))
 

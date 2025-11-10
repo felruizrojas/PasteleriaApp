@@ -2,6 +2,7 @@ package com.example.pasteleriaapp.ui.state
 
 import com.example.pasteleriaapp.domain.model.TipoUsuario
 import com.example.pasteleriaapp.domain.model.Usuario
+import android.net.Uri
 
 /**
  * Estado que unifica la lógica de Login y Registro.
@@ -16,6 +17,7 @@ data class AuthUiState(
     val logoutSuccess: Boolean = false,
     val updateSuccess: Boolean = false,
 
+    val fotoUri: Uri? = null,
     // --- Campos de Login ---
     val loginCorreo: String = "",
     val loginContrasena: String = "",
