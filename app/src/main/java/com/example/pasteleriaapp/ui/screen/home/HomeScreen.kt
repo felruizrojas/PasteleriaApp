@@ -10,9 +10,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,10 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
+import com.example.pasteleriaapp.ui.components.AppScaffold
+import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
@@ -43,6 +46,7 @@ fun HomeScreen(
     onNavigateToNosotros: () -> Unit,
     onNavigateToCarrito: () -> Unit,
     onNavigateToBlog: () -> Unit,
+    onOpenInstagram: () -> Unit,
     onLogoutSuccess: () -> Unit
 ) {
     val state by authViewModel.uiState.collectAsState()
@@ -56,44 +60,28 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Pastelería Mil Sabores") },
-                actions = {
-                    // --- Botón de Carrito ---
-                    IconButton(onClick = onNavigateToCarrito) {
-                        BadgedBox(
-                            badge = {
-                                if (carritoState.totalArticulos > 0) {
-                                    Badge {
-                                        Text("${carritoState.totalArticulos}")
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.ShoppingCart, "Ver carrito")
-                        }
-                    }
-
-                    if (usuario != null) {
-                        // --- Botón de Perfil ---
-                        IconButton(onClick = onNavigateToPerfil) {
-                            Icon(Icons.Default.Person, "Mi Perfil")
-                        }
-                        // --- Botón de Cerrar Sesión ---
-                        val ctx = LocalContext.current
-                        IconButton(onClick = { authViewModel.logout(ctx) }) {
-                            Icon(Icons.AutoMirrored.Filled.ExitToApp, "Cerrar Sesión")
-                        }
-                    } else {
-                        // --- Botón de Inicio de Sesión/Registro ---
-                        IconButton(onClick = onNavigateToAuth) {
-                            Icon(Icons.Default.Person, "Iniciar Sesión")
-                        }
-                    }
+    AppScaffold(
+        badgeCount = carritoState.totalArticulos,
+        isLoggedIn = usuario != null,
+        topBarActions = AppTopBarActions(
+            onNavigateToCatalogo = onNavigateToCatalogo,
+            onNavigateToBlog = onNavigateToBlog,
+            onNavigateToNosotros = onNavigateToNosotros,
+            onOpenInstagram = onOpenInstagram,
+            onCartClick = onNavigateToCarrito,
+            onProfileClick = onNavigateToPerfil,
+            onLoginClick = onNavigateToAuth
+        ),
+        extraActions = {
+            if (usuario != null) {
+                val ctx = LocalContext.current
+                IconButton(onClick = { authViewModel.logout(ctx) }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Cerrar sesión"
+                    )
                 }
-            )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -115,14 +103,14 @@ fun HomeScreen(
             // --- Tarjeta para "Catálogo de Productos" ---
             ActionButtonCard(
                 imageName = "home",
-                text = "Catálogo de Productos",
+                text = "Catálogo",
                 onClick = onNavigateToCatalogo
             )
 
             // --- Tarjeta para "Blog de Repostería" ---
             ActionButtonCard(
                 imageName = "blog",
-                text = "Blog de Repostería",
+                text = "Blog",
                 onClick = onNavigateToBlog
             )
 

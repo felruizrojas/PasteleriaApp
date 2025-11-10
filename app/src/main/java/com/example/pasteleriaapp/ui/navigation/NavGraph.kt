@@ -1,5 +1,7 @@
 package com.example.pasteleriaapp.ui.navigation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -7,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,6 +95,12 @@ fun AppNavGraph(
                 onNavigateToCarrito = { navController.navigate(Rutas.CARRITO) },
                 onNavigateToBlog = {
                     navController.navigate(Rutas.BLOG)
+                },
+                onOpenInstagram = {
+                    val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com"))
+                    if (instagramIntent.resolveActivity(ctx.packageManager) != null) {
+                        ctx.startActivity(instagramIntent)
+                    }
                 },
                 onLogoutSuccess = {
                     navController.navigate(Rutas.HOME) {
