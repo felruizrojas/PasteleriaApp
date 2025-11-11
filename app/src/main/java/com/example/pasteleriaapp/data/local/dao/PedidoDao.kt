@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.pasteleriaapp.data.local.entity.PedidoEntity
 import com.example.pasteleriaapp.data.local.entity.PedidoProductoEntity
+import com.example.pasteleriaapp.domain.model.EstadoPedido
 import com.example.pasteleriaapp.domain.model.Pedido
 import kotlinx.coroutines.flow.Flow
 
@@ -30,4 +31,10 @@ interface PedidoDao {
 
     @Query("SELECT * FROM pedido_producto WHERE idPedido = :idPedido")
     suspend fun obtenerProductosPorPedidoId(idPedido: Int): List<PedidoProductoEntity>
+
+    @Query("SELECT * FROM pedido ORDER BY fechaPedido DESC")
+    fun obtenerTodosLosPedidos(): Flow<List<PedidoEntity>>
+
+    @Query("UPDATE pedido SET estado = :estado WHERE idPedido = :idPedido")
+    suspend fun actualizarEstadoPedido(idPedido: Int, estado: EstadoPedido)
 }

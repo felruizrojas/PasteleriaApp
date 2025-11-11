@@ -2,13 +2,12 @@ package com.example.pasteleriaapp.data.repository
 
 import androidx.room.withTransaction
 import com.example.pasteleriaapp.data.local.AppDatabase
-import com.example.pasteleriaapp.data.local.dao.CarritoDao
-import com.example.pasteleriaapp.data.local.dao.PedidoDao
 import com.example.pasteleriaapp.data.local.entity.PedidoProductoEntity
 import com.example.pasteleriaapp.data.local.entity.toPedido
 import com.example.pasteleriaapp.data.local.entity.toPedidoEntity
 import com.example.pasteleriaapp.data.local.entity.toPedidoProducto
 import com.example.pasteleriaapp.domain.model.CarritoItem
+import com.example.pasteleriaapp.domain.model.EstadoPedido
 import com.example.pasteleriaapp.domain.model.Pedido
 import com.example.pasteleriaapp.domain.model.PedidoProducto
 import com.example.pasteleriaapp.domain.repository.PedidoRepository
@@ -58,9 +57,19 @@ class PedidoRepositoryImpl(
         }
     }
 
+    override fun obtenerTodosLosPedidos(): Flow<List<Pedido>> {
+        return pedidoDao.obtenerTodosLosPedidos().map { entities ->
+            entities.map { it.toPedido() }
+        }
+    }
+
     override suspend fun obtenerDetallePedido(idPedido: Int): Pair<Pedido?, List<PedidoProducto>> {
         val pedido = pedidoDao.obtenerPedidoPorId(idPedido)?.toPedido()
         val productos = pedidoDao.obtenerProductosPorPedidoId(idPedido).map { it.toPedidoProducto() }
         return Pair(pedido, productos)
+    }
+
+    override suspend fun actualizarEstadoPedido(idPedido: Int, estado: EstadoPedido) {
+        pedidoDao.actualizarEstadoPedido(idPedido, estado)
     }
 }

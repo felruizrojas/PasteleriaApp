@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -106,12 +106,12 @@ fun AppTopBar(
                     }
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
                 Image(
                     painter = painterResource(id = R.drawable.logo_nav),
                     contentDescription = "Pastelería Mil Sabores",
-                    modifier = Modifier.size(38.dp),
+                    modifier = Modifier.size(28.dp),
                     contentScale = ContentScale.Fit
                 )
             }

@@ -19,6 +19,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,6 +58,7 @@ fun AdminCatalogContent(
     viewModel: AdminCatalogViewModel,
     onAgregarProducto: (Int) -> Unit,
     onEditarProducto: (Int, Int) -> Unit,
+    onNavigateAdmin: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -96,6 +101,43 @@ fun AdminCatalogContent(
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
+
+        // Botón hamburguesa para opciones de administración
+        var menuExpanded by remember { mutableStateOf(false) }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = { menuExpanded = true }) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menú administración"
+                )
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                DropdownMenuItem(text = { Text("Usuarios") }, onClick = {
+                    menuExpanded = false
+                    onNavigateAdmin("usuarios")
+                })
+                DropdownMenuItem(text = { Text("Productos") }, onClick = {
+                    menuExpanded = false
+                    onNavigateAdmin("productos")
+                })
+                DropdownMenuItem(text = { Text("Pedidos") }, onClick = {
+                    menuExpanded = false
+                    onNavigateAdmin("pedidos")
+                })
+                DropdownMenuItem(text = { Text("Tienda") }, onClick = {
+                    menuExpanded = false
+                    onNavigateAdmin("tienda")
+                })
+            }
+        }
 
         if (state.isActionInProgress) {
             LinearProgressIndicator(

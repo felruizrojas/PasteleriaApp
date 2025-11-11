@@ -26,6 +26,8 @@ import com.example.pasteleriaapp.domain.repository.CategoriaRepository
 import com.example.pasteleriaapp.domain.repository.PedidoRepository
 import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.domain.repository.UsuarioRepository
+import com.example.pasteleriaapp.ui.screen.admin.AdminDashboardScreen
+import com.example.pasteleriaapp.ui.screen.admin.AdminPedidosScreen
 import com.example.pasteleriaapp.ui.screen.admin.UsuariosAdminScreen
 import com.example.pasteleriaapp.ui.screen.auth.LoginScreen
 import com.example.pasteleriaapp.ui.screen.auth.RegisterScreen
@@ -62,6 +64,8 @@ import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModel
 import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModelFactory
 import com.example.pasteleriaapp.ui.screen.admin.AdminCatalogContent
 import com.example.pasteleriaapp.ui.viewmodel.AdminCatalogViewModelFactory
+import com.example.pasteleriaapp.ui.viewmodel.AdminPedidosViewModel
+import com.example.pasteleriaapp.ui.viewmodel.AdminPedidosViewModelFactory
 
 @Composable
 fun AppNavGraph(
@@ -128,7 +132,7 @@ fun AppNavGraph(
         onProfileClick = { navController.navigateSingleTop(Rutas.PERFIL) },
         onLoginClick = { navController.navigateSingleTop(Rutas.AUTH_FLOW) },
         onNavigateToAdmin = if (puedeAdministrar) {
-            { navController.navigateSingleTop(Rutas.ADMIN_CATALOGO) }
+            { navController.navigateSingleTop(Rutas.ADMIN_PANEL) }
         } else null
     )
 
@@ -293,7 +297,7 @@ fun AppNavGraph(
                     navController.navigate(Rutas.MIS_PEDIDOS)
                 },
                 onNavigateToAdminPanel = {
-                    navController.navigateSingleTop(Rutas.ADMIN_CATALOGO)
+                    navController.navigateSingleTop(Rutas.ADMIN_PANEL)
                 },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
@@ -302,7 +306,34 @@ fun AppNavGraph(
             )
         }
 
-        // --- 9b. RUTA ADMINISTRACIÓN DE USUARIOS ---
+        // --- 9b. PANEL PRINCIPAL ADMIN ---
+        composable(Rutas.ADMIN_PANEL) {
+            val usuarioActual = authState.usuarioActual
+            if (usuarioActual == null ||
+                (usuarioActual.tipoUsuario != TipoUsuario.superAdmin &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Administrador &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Vendedor)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tienes permiso para acceder a esta sección.")
+                }
+            } else {
+                AdminDashboardScreen(
+                    badgeCount = badgeCount,
+                    isLoggedIn = isLoggedIn,
+                    topBarActions = topBarActions,
+                    onNavigateToProductos = { navController.navigateSingleTop(Rutas.ADMIN_CATALOGO) },
+                    onNavigateToUsuarios = { navController.navigateSingleTop(Rutas.ADMIN_USUARIOS) },
+                    onNavigateToPedidos = { navController.navigateSingleTop(Rutas.ADMIN_PEDIDOS) },
+                    onLogout = onLogout
+                )
+            }
+        }
+
+        // --- 9c. RUTA ADMINISTRACIÓN DE USUARIOS ---
         composable(Rutas.ADMIN_USUARIOS) {
             val usuarioActual = authState.usuarioActual
             if (usuarioActual == null ||
@@ -323,6 +354,35 @@ fun AppNavGraph(
                     viewModel = adminViewModel,
                     currentUser = usuarioActual,
                     onBackClick = { navController.popBackStack() },
+                    badgeCount = badgeCount,
+                    isLoggedIn = isLoggedIn,
+                    topBarActions = topBarActions,
+                    onLogout = onLogout
+                )
+            }
+        }
+
+        // --- 9d. RUTA ADMINISTRACIÓN DE PEDIDOS ---
+        composable(Rutas.ADMIN_PEDIDOS) {
+            val usuarioActual = authState.usuarioActual
+            if (usuarioActual == null ||
+                (usuarioActual.tipoUsuario != TipoUsuario.superAdmin &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Administrador &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Vendedor)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tienes permiso para acceder a esta sección.")
+                }
+            } else {
+                val factory = AdminPedidosViewModelFactory(pedidoRepository, usuarioRepository)
+                val adminPedidosViewModel: AdminPedidosViewModel = viewModel(factory = factory)
+                AdminPedidosScreen(
+                    viewModel = adminPedidosViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onVerDetalle = { idPedido -> navController.navigate(Rutas.obtenerRutaDetallePedido(idPedido)) },
                     badgeCount = badgeCount,
                     isLoggedIn = isLoggedIn,
                     topBarActions = topBarActions,
@@ -357,7 +417,7 @@ fun AppNavGraph(
                         when (destino) {
                             "usuarios" -> navController.navigateSingleTop(Rutas.ADMIN_USUARIOS)
                             "productos" -> navController.navigateSingleTop(Rutas.CATEGORIAS)
-                            "pedidos" -> navController.navigateSingleTop(Rutas.MIS_PEDIDOS)
+                            "pedidos" -> navController.navigateSingleTop(Rutas.ADMIN_PEDIDOS)
                             "tienda" -> navController.navigateSingleTop(Rutas.HOME)
                             else -> Unit
                         }
