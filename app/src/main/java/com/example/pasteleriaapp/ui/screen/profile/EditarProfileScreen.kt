@@ -61,9 +61,21 @@ fun EditarProfileScreen(
     LaunchedEffect(Unit) {
         authViewModel.cargarDatosPerfil()
     }
-    // ... (Otros LaunchedEffects sin cambios) ...
-    LaunchedEffect(state.updateSuccess) { /* ... */ }
-    LaunchedEffect(state.error) { /* ... */ }
+
+    LaunchedEffect(state.updateSuccess) {
+        if (state.updateSuccess) {
+            Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+            onEditSuccess()
+            authViewModel.resetNavegacion()
+        }
+    }
+
+    LaunchedEffect(state.error) {
+        state.error?.let { mensajeError ->
+            Toast.makeText(context, mensajeError, Toast.LENGTH_SHORT).show()
+            authViewModel.resetNavegacion()
+        }
+    }
 
     Scaffold(
         // ... (TopAppBar sin cambios) ...
