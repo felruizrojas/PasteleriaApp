@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,16 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import android.app.DatePickerDialog
+import android.content.Context
 import java.util.Calendar
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
@@ -89,7 +86,7 @@ fun RegisterScreen(
                 if (state.regRunError != null) {
                     Text(text = state.regRunError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
 
                 VoiceTextField(
                     value = state.regNombre,
@@ -135,18 +132,32 @@ fun RegisterScreen(
                 }
                 Spacer(Modifier.height(8.dp))
 
-                var showDatePicker by remember { mutableStateOf(false) }
-                OutlinedTextField(
-                    value = state.regFechaNacimiento,
-                    onValueChange = {},
-                    label = { Text("Fecha Nacimiento (DD-MM-AAAA)") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true },
-                    readOnly = true,
-                    isError = state.regFechaNacimientoError != null,
-                    singleLine = true
-                )
+                val interactionSource = remember { MutableInteractionSource() }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = state.regFechaNacimiento,
+                        onValueChange = {},
+                        label = { Text("Fecha Nacimiento (DD-MM-AAAA)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        isError = state.regFechaNacimientoError != null,
+                        singleLine = true
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                showDatePickerDialog(
+                                    context = context,
+                                    currentValue = state.regFechaNacimiento,
+                                    onDateSelected = viewModel::onRegFechaNacimientoChange
+                                )
+                            }
+                    )
+                }
                 if (state.regFechaNacimientoError != null) {
                     Text(
                         text = state.regFechaNacimientoError ?: "",
@@ -156,22 +167,6 @@ fun RegisterScreen(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-
-                if (showDatePicker) {
-                    val hoy = Calendar.getInstance()
-                    DatePickerDialog(
-                        LocalContext.current,
-                        { _, ano, mes, dia ->
-                            // mes viene 0-based
-                            val formatted = String.format("%02d-%02d-%04d", dia, mes + 1, ano)
-                            viewModel.onRegFechaNacimientoChange(formatted)
-                            showDatePicker = false
-                        },
-                        hoy.get(Calendar.YEAR),
-                        hoy.get(Calendar.MONTH),
-                        hoy.get(Calendar.DAY_OF_MONTH)
-                    ).show()
-                }
 
                 VoiceTextField(
                     value = state.regRegion,
@@ -260,37 +255,38 @@ fun RegisterScreen(
 }
 
 private fun sanitizeRunInput(input: String): String {
-    val sanitized = StringBuilder()
-    var hasHyphen = false
-    var verifierLength = 0
+    val numbers = StringBuilder()
+    var hyphenRequested = false
+    var verifier: String? = null
 
     input.forEach { char ->
         when {
-            char.isDigit() -> {
-                if (!hasHyphen) {
-                    sanitized.append(char)
-                } else if (verifierLength == 0) {
-                    sanitized.append(char)
-                    verifierLength = 1
+            char.isDigit() && !hyphenRequested -> {
+                if (numbers.length < 8) {
+                    numbers.append(char)
                 }
             }
-            char == '-' -> {
-                if (!hasHyphen && sanitized.isNotEmpty()) {
-                    sanitized.append(char)
-                    hasHyphen = true
-                    verifierLength = 0
-                }
+
+            (char == '-' || char == '–') && numbers.isNotEmpty() && !hyphenRequested -> {
+                hyphenRequested = true
             }
-            char == 'k' || char == 'K' -> {
-                if (hasHyphen && verifierLength == 0) {
-                    sanitized.append('k')
-                    verifierLength = 1
+
+            hyphenRequested && verifier == null -> {
+                when {
+                    char.isDigit() -> verifier = char.toString()
+                    char.equals('k', ignoreCase = true) -> verifier = "K"
                 }
             }
         }
     }
 
-    return sanitized.toString()
+    return buildString {
+        append(numbers)
+        if (hyphenRequested && numbers.isNotEmpty()) {
+            append('-')
+            verifier?.let { append(it) }
+        }
+    }
 }
 
 private fun sanitizeAlphabeticInput(input: String): String {
@@ -313,4 +309,35 @@ private fun sanitizeAlphabeticInput(input: String): String {
     }
 
     return sanitized.toString().trimEnd()
+}
+private fun showDatePickerDialog(
+    context: Context,
+    currentValue: String,
+    onDateSelected: (String) -> Unit
+) {
+    val calendar = Calendar.getInstance()
+    if (currentValue.isNotBlank()) {
+        val parts = currentValue.split("-")
+        if (parts.size == 3) {
+            val day = parts[0].toIntOrNull()
+            val month = parts[1].toIntOrNull()
+            val year = parts[2].toIntOrNull()
+            if (day != null && month != null && year != null) {
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month - 1)
+                calendar.set(Calendar.DAY_OF_MONTH, day)
+            }
+        }
+    }
+
+    DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val formatted = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
+            onDateSelected(formatted)
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    ).show()
 }
