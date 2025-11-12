@@ -43,7 +43,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pasteleriaapp.R
+import com.example.pasteleriaapp.core.pricing.PricingCalculator
+import com.example.pasteleriaapp.core.pricing.PricingSummary
 import com.example.pasteleriaapp.domain.model.CarritoItem
+import com.example.pasteleriaapp.domain.model.Usuario
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
@@ -56,12 +59,16 @@ fun CarritoScreen(
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
-    onLogout: (() -> Unit)?
+    onLogout: (() -> Unit)?,
+    usuario: Usuario?
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var itemEnEdicion by remember { mutableStateOf<CarritoItem?>(null) }
     var mensajeTemporal by remember { mutableStateOf("") }
+    val pricing = remember(state.items, usuario) {
+        PricingCalculator.calcularResumen(state.items, usuario)
+    }
 
     AppScaffold(
         badgeCount = badgeCount,
@@ -73,7 +80,7 @@ fun CarritoScreen(
         bottomBar = {
             if (state.hayItems) {
                 CarritoBottomBar(
-                    total = state.precioTotal,
+                    pricing = pricing,
                     onPagarClick = onNavigateToCheckout
                 )
             }
@@ -255,7 +262,7 @@ fun CarritoItemRow(
 
 @Composable
 fun CarritoBottomBar(
-    total: Double,
+    pricing: PricingSummary,
     onPagarClick: () -> Unit
 ) {
     BottomAppBar(
@@ -268,11 +275,24 @@ fun CarritoBottomBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                "Total: $${"%.0f".format(total)}",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Column {
+                Text(
+                    "Subtotal: $${pricing.subtotalFormateado}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                if (pricing.tieneDescuento) {
+                    Text(
+                        "Descuentos: -$${pricing.descuentoFormateado}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                Text(
+                    "Total: $${pricing.totalFormateado}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Button(onClick = onPagarClick) {
                 Text("Pagar")
             }

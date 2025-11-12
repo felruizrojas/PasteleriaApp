@@ -44,11 +44,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.example.pasteleriaapp.core.pricing.PricingCalculator
+import com.example.pasteleriaapp.core.pricing.PricingSummary
 import com.example.pasteleriaapp.domain.model.CarritoItem
 import com.example.pasteleriaapp.domain.model.Usuario
 import com.example.pasteleriaapp.ui.state.CarritoUiState
@@ -79,11 +82,13 @@ fun CheckoutScreen(
     val checkoutState by pedidoViewModel.checkoutState.collectAsState()
     val usuario = authState.usuarioActual
     val context = LocalContext.current
+    val pricing = remember(carritoState.items, usuario) {
+        PricingCalculator.calcularResumen(carritoState.items, usuario)
+    }
 
     var mostrarOpcionesBoleta by remember { mutableStateOf(false) }
     var uriBoleta by remember { mutableStateOf<Uri?>(null) }
     var itemsParaBoleta by remember { mutableStateOf<List<CarritoItem>>(emptyList()) }
-    var totalParaBoleta by remember { mutableStateOf(0.0) }
 
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
@@ -104,8 +109,7 @@ fun CheckoutScreen(
                 context = context,
                 pedidoId = idGenerado,
                 usuario = usuario,
-                items = itemsParaBoleta,
-                total = totalParaBoleta
+                items = itemsParaBoleta
             )
             if (uri != null) {
                 uriBoleta = uri
@@ -151,10 +155,7 @@ fun CheckoutScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text("Resumen del Pedido", style = MaterialTheme.typography.titleLarge)
-            Text(
-                "Total a Pagar: $${"%.0f".format(carritoState.precioTotal)}",
-                style = MaterialTheme.typography.headlineSmall
-            )
+            ResumenPago(pricing = pricing)
 
             Text("Información de Entrega", style = MaterialTheme.typography.titleLarge)
             Text("Dirección: ${usuario.direccion}, ${usuario.comuna}, ${usuario.region}")
@@ -223,11 +224,10 @@ fun CheckoutScreen(
             Button(
                 onClick = {
                     itemsParaBoleta = carritoState.items.map { it.copy() }
-                    totalParaBoleta = carritoState.precioTotal
                     pedidoViewModel.crearPedido(
                         idUsuario = usuario.idUsuario,
                         items = carritoState.items,
-                        total = carritoState.precioTotal
+                        total = pricing.total
                     )
                 },
                 modifier = Modifier
@@ -294,6 +294,28 @@ fun CheckoutScreen(
     }
 }
 
+@Composable
+private fun ResumenPago(pricing: PricingSummary) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            "Subtotal: $${pricing.subtotalFormateado}",
+            style = MaterialTheme.typography.bodyLarge
+        )
+        if (pricing.tieneDescuento) {
+            Text(
+                "Descuentos: -$${pricing.descuentoFormateado}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
+        Text(
+            "Total a pagar: $${pricing.totalFormateado}",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
 private fun formatCardNumber(numero: String): String {
     return numero.chunked(4).joinToString(" ")
 }
@@ -302,10 +324,10 @@ private fun generarBoletaPdf(
     context: Context,
     pedidoId: Long,
     usuario: Usuario,
-    items: List<CarritoItem>,
-    total: Double
+    items: List<CarritoItem>
 ): Uri? {
     if (items.isEmpty()) return null
+    val pricing = PricingCalculator.calcularResumen(items, usuario)
     val pdfDocument = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
     val page = pdfDocument.startPage(pageInfo)
@@ -346,7 +368,13 @@ private fun generarBoletaPdf(
     }
 
     y += 10f
-    canvas.drawText("Total pagado: $${"%.0f".format(total)}", 40f, y, bodyPaint)
+    canvas.drawText("Subtotal: $${pricing.subtotalFormateado}", 40f, y, bodyPaint)
+    y += 20f
+    if (pricing.tieneDescuento) {
+        canvas.drawText("Descuentos: -$${pricing.descuentoFormateado}", 40f, y, bodyPaint)
+        y += 20f
+    }
+    canvas.drawText("Total pagado: $${pricing.totalFormateado}", 40f, y, bodyPaint)
 
     pdfDocument.finishPage(page)
 

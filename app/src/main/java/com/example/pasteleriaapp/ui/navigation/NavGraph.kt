@@ -305,7 +305,8 @@ fun AppNavGraph(
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
-                onLogout = onLogout
+                onLogout = onLogout,
+                usuario = authState.usuarioActual
             )
         }
 

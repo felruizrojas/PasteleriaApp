@@ -31,8 +31,8 @@ class CarritoViewModel(
 
             repository.obtenerItemsCarrito()
                 .map { items ->
-                    val total = items.sumOf { it.precioProducto * it.cantidad }
-                    CarritoUiState(estaCargando = false, items = items, precioTotal = total)
+                    val subtotal = items.sumOf { it.precioProducto * it.cantidad }
+                    CarritoUiState(estaCargando = false, items = items, subtotal = subtotal)
                 }
                 .catch { e ->
                     _uiState.value = CarritoUiState(estaCargando = false, error = e.message)
