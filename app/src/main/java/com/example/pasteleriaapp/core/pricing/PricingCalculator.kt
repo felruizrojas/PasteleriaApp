@@ -2,14 +2,14 @@ package com.example.pasteleriaapp.core.pricing
 
 import com.example.pasteleriaapp.domain.model.CarritoItem
 import com.example.pasteleriaapp.domain.model.Usuario
+import java.util.Calendar
+
 /**
  * Centraliza la lógica de descuentos aplicada sobre el subtotal del carrito.
  */
 object PricingCalculator {
-    private const val DESCUENTO_EDAD = 0.10
-    private const val DESCUENTO_PROMO = 0.50
-    private const val DESCUENTO_DUOC = 0.15
-    private const val MAX_DESCUENTO_ACUMULADO = 0.70
+    private const val DESCUENTO_EDAD = 0.50
+    private const val DESCUENTO_PROMO = 0.10
 
     fun calcularResumen(items: List<CarritoItem>, usuario: Usuario?): PricingSummary {
         val subtotal = items.sumOf { it.precioProducto * it.cantidad }
@@ -17,12 +17,18 @@ object PricingCalculator {
             return PricingSummary(subtotal = 0.0, descuento = 0.0, total = 0.0)
         }
 
-        val tasaDescuento = usuario?.let { u ->
+        val usuarioActual = usuario
+
+        if (usuarioActual != null && usuarioActual.esEstudianteDuoc && esCumpleanosHoy(usuarioActual.fechaNacimiento)) {
+            return PricingSummary(subtotal = subtotal, descuento = subtotal, total = 0.0)
+        }
+
+        val tasaDescuento = usuarioActual?.let { u ->
             var acumulado = 0.0
-            if (u.tieneDescuentoEdad) acumulado += DESCUENTO_EDAD
+            val aplicaDescuentoEdad = esMayorOIgualCincuenta(u.fechaNacimiento) || u.tieneDescuentoEdad
+            if (aplicaDescuentoEdad) acumulado += DESCUENTO_EDAD
             if (u.tieneDescuentoCodigo) acumulado += DESCUENTO_PROMO
-            if (u.esEstudianteDuoc) acumulado += DESCUENTO_DUOC
-            acumulado.coerceAtMost(MAX_DESCUENTO_ACUMULADO)
+            acumulado.coerceIn(0.0, 1.0)
         } ?: 0.0
 
         val descuento = subtotal * tasaDescuento
@@ -33,6 +39,39 @@ object PricingCalculator {
             descuento = descuento,
             total = total
         )
+    }
+    private fun esCumpleanosHoy(fechaNacimiento: String): Boolean {
+        val partes = fechaNacimiento.split("-")
+        if (partes.size != 3) return false
+        val dia = partes[0].toIntOrNull() ?: return false
+        val mes = partes[1].toIntOrNull() ?: return false
+
+        val hoy = Calendar.getInstance()
+        val diaActual = hoy.get(Calendar.DAY_OF_MONTH)
+        val mesActual = hoy.get(Calendar.MONTH) + 1
+
+        return diaActual == dia && mesActual == mes
+    }
+
+    private fun esMayorOIgualCincuenta(fechaNacimiento: String): Boolean {
+        val partes = fechaNacimiento.split("-")
+        if (partes.size != 3) return false
+        val dia = partes[0].toIntOrNull() ?: return false
+        val mes = partes[1].toIntOrNull() ?: return false
+        val ano = partes[2].toIntOrNull() ?: return false
+
+        val hoy = Calendar.getInstance()
+        val nacimiento = Calendar.getInstance().apply {
+            set(ano, mes - 1, dia, 0, 0, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        var edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR)
+        if (hoy.get(Calendar.DAY_OF_YEAR) < nacimiento.get(Calendar.DAY_OF_YEAR)) {
+            edad--
+        }
+
+        return edad >= 50
     }
 }
 

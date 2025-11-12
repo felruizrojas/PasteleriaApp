@@ -61,9 +61,10 @@ fun ProductoDetalleScreen(
 
     LaunchedEffect(state.itemAgregado) {
         if (state.itemAgregado) {
+            val nombre = state.producto?.nombreProducto ?: "Producto"
             Toast.makeText(
                 context,
-                "${'$'}{state.producto?.nombreProducto} añadido al carrito",
+                "$nombre añadido al carrito",
                 Toast.LENGTH_SHORT
             ).show()
             viewModel.eventoItemAgregadoMostrado()
@@ -94,7 +95,7 @@ fun ProductoDetalleScreen(
             val producto = state.producto
             when {
                 state.estaCargando -> CircularProgressIndicator()
-                state.error != null -> Text("Error: ${'$'}{state.error}")
+                state.error != null -> Text("Error: ${state.error}")
                 producto != null -> ProductoDetalle(
                     producto = producto,
                     onAgregarAlCarrito = { mensaje ->
@@ -125,7 +126,7 @@ private fun ProductoDetalle(
     ) {
         Image(
             painter = painterResource(id = imageResId),
-            contentDescription = "Imagen de ${'$'}{producto.nombreProducto}",
+            contentDescription = "Imagen de ${producto.nombreProducto}",
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
@@ -145,7 +146,7 @@ private fun ProductoDetalle(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "${'$'}${"%.0f".format(producto.precioProducto)}",
+                text = "$${"%.0f".format(producto.precioProducto)}",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -162,7 +163,7 @@ private fun ProductoDetalle(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Stock disponible: ${'$'}{producto.stockProducto} unidades",
+                text = "Stock disponible: ${producto.stockProducto} unidades",
                 style = MaterialTheme.typography.bodySmall
             )
             Spacer(Modifier.height(24.dp))
@@ -213,18 +214,18 @@ private fun ProductoDetalle(
 
 private fun compartirProducto(context: Context, producto: Producto, mensaje: String) {
     val textoCompartir = """
-		¡Mira este increíble producto de Pastelería Mil Sabores!
+        ¡Mira este increíble producto de Pastelería Mil Sabores!
 
-		${'$'}{producto.nombreProducto} - ${'$'}${"%.0f".format(producto.precioProducto)}
+        ${producto.nombreProducto} - $${"%.0f".format(producto.precioProducto)}
 
-		${'$'}{producto.descripcionProducto}
+        ${producto.descripcionProducto}
 
-		${'$'}{if (mensaje.isNotBlank()) "Mi mensaje: ${'$'}mensaje" else ""}
+        ${if (mensaje.isNotBlank()) "Mi mensaje: $mensaje" else ""}
 	""".trimIndent()
 
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Producto: ${'$'}{producto.nombreProducto}")
+        putExtra(Intent.EXTRA_SUBJECT, "Producto: ${producto.nombreProducto}")
         putExtra(Intent.EXTRA_TEXT, textoCompartir)
     }
 

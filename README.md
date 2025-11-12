@@ -2,9 +2,9 @@
 # Pastelería Mil Sabores — App Móvil
 
 > **Credenciales de prueba**
-> - Superadmin: `ana@duoc.cl` / `123q`
-> - Administrador: `luis@duoc.cl` / `123q`
-> - Vendedor: `marcela@profesor.duoc.cl` / `123q`
+> - Superadmin: `ana@duoc.cl` / `123q` (verificar descuento duoc torta gratis cumpleaños)
+> - Administrador: `luis@gmail.com` / `123q` (verificar descuento 50% por edad >=50 años)
+> - Vendedor: `marcela@gmail.com` / `123q` (verificar descuento por codigo promocional)
 > - Cliente: `claudia.fernandez@gmail.com` / `123q`
 
 

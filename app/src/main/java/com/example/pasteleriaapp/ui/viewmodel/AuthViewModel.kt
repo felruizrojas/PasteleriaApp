@@ -159,8 +159,8 @@ class AuthViewModel(
         }
 
         val edad = calcularEdad(fecha)
-        val flagDescuentoEdad = edad > 50
-        val flagDescuentoCodigo = codigo.equals("FELICES50", ignoreCase = true)
+        val flagDescuentoEdad = edad >= 50
+        val flagDescuentoCodigo = codigo.equals("PROMO10", ignoreCase = true) || codigo.equals("FELICES50", ignoreCase = true)
         val flagEsEstudianteDuoc = correo.endsWith("@duoc.cl") || correo.endsWith("@profesor.duoc.cl")
 
         viewModelScope.launch {
