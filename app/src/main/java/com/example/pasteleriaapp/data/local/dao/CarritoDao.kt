@@ -23,6 +23,9 @@ interface CarritoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarItem(item: CarritoItemEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarItems(items: List<CarritoItemEntity>)
+
     @Update
     suspend fun actualizarItem(item: CarritoItemEntity)
 

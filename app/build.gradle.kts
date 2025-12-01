@@ -17,6 +17,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/\"")
     }
 
     buildTypes {
@@ -37,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -73,6 +75,12 @@ dependencies {
 
     // Accompanist Permissions
     implementation(libs.accompanist.permissions)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.okhttp.logging)
+    implementation(libs.moshi.kotlin)
 
     // Testing
     testImplementation(libs.junit)

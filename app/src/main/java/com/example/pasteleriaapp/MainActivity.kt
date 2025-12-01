@@ -9,14 +9,12 @@ import androidx.compose.ui.Modifier
 // Imports necesarios
 import androidx.navigation.compose.rememberNavController
 import com.example.pasteleriaapp.data.local.AppDatabase
+import com.example.pasteleriaapp.data.remote.NetworkModule
 import com.example.pasteleriaapp.data.repository.CategoriaRepositoryImpl
 import com.example.pasteleriaapp.data.repository.CarritoRepositoryImpl
 import com.example.pasteleriaapp.data.repository.PedidoRepositoryImpl
-// --- ¡ESTA ES LA LÍNEA CORREGIDA! ---
-import com.example.pasteleriaapp.domain.repository.CarritoRepository
-import com.example.pasteleriaapp.data.repository.UsuarioRepositoryImpl
-import com.example.pasteleriaapp.domain.repository.UsuarioRepository
 import com.example.pasteleriaapp.data.repository.ProductoRepositoryImpl
+import com.example.pasteleriaapp.data.repository.UsuarioRepositoryImpl
 import com.example.pasteleriaapp.ui.navigation.AppNavGraph
 import com.example.pasteleriaapp.ui.theme.PasteleriaAppTheme
 
@@ -29,13 +27,15 @@ class MainActivity : ComponentActivity() {
         // Obtenemos la instancia de la base de datos
         val database = AppDatabase.getDatabase(applicationContext)
 
+        val apiService = NetworkModule.apiService
+
         // Creamos las implementaciones de los repositorios,
         // pasándoles los DAOs desde la base de datos.
-        val categoriaRepository = CategoriaRepositoryImpl(database.categoriaDao())
-        val productoRepository = ProductoRepositoryImpl(database.productoDao())
-        val carritoRepository = CarritoRepositoryImpl(database.carritoDao())
-        val usuarioRepository = UsuarioRepositoryImpl(database.usuarioDao())
-        val pedidoRepository = PedidoRepositoryImpl(database)
+        val categoriaRepository = CategoriaRepositoryImpl(database.categoriaDao(), apiService)
+        val productoRepository = ProductoRepositoryImpl(database.productoDao(), apiService)
+        val carritoRepository = CarritoRepositoryImpl(database.carritoDao(), apiService)
+        val usuarioRepository = UsuarioRepositoryImpl(database.usuarioDao(), apiService)
+        val pedidoRepository = PedidoRepositoryImpl(database, apiService)
 
         // --- 2. Configuración del Contenido ---
         setContent {
