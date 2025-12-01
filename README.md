@@ -93,5 +93,39 @@ app/src/main/
 - Contraseña: protegida con hash seguro (no se almacena en texto plano) y validada por coincidencia entre contraseña y confirmación.
 - Reglas de negocio adicionales en checkout (descuentos por edad, código promocional y dominio DUOC).
 
+## 🧪 Pruebas Unitarias
+
+Actualmente se incluyen pruebas enfocadas en lógica pura para garantizar 100 % de cobertura en cinco archivos críticos:
+
+- `EstadoPedidoExtensionsTest.kt` valida los helpers de seguimiento de pedidos.
+- `RutasTest.kt` asegura la generación correcta de rutas de navegación.
+- `CategoriaUiStateTest.kt` y `CarritoUiStateTest.kt` cubren los estados de UI.
+- `CategoriaViewModelTest.kt` comprueba carga inicial, filtrado y la `Factory`.
+
+**Ejecutar pruebas / cobertura**
+
+1. Sincroniza el proyecto (`Sync Project with Gradle Files`).
+2. Para correr las pruebas: `./gradlew test` o desde Android Studio ejecutando la carpeta `app/src/test/java`.
+3. Para generar cobertura Jacoco: `./gradlew jacocoTestReport`.
+
+**Reportes generados**
+
+- Resultados de pruebas: `app/build/reports/tests/testDebugUnitTest/index.html`.
+- Cobertura Jacoco: `app/build/reports/jacoco/jacocoTestReport/html/index.html` (XML en la misma carpeta).
+
+En macOS puedes abrir cualquiera de los reportes desde la terminal con:
+
+```
+open app/build/reports/tests/testDebugUnitTest/index.html
+open app/build/reports/jacoco/jacocoTestReport/html/index.html
+```
+
+En Windows (PowerShell) ejecuta:
+
+```
+start .\app\build\reports\tests\testDebugUnitTest\index.html
+start .\app\build\reports\jacoco\jacocoTestReport\html\index.html
+```
+
 ## 📜 Licencia
 Este proyecto fue desarrollado con fines académicos.
