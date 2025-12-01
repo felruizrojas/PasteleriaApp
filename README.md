@@ -126,6 +126,8 @@ En Windows (PowerShell) ejecuta:
 start .\app\build\reports\tests\testDebugUnitTest\index.html
 start .\app\build\reports\jacoco\jacocoTestReport\html\index.html
 ```
+# Autor
+Felipe Ruiz
 
 ## 📜 Licencia
 Este proyecto fue desarrollado con fines académicos.
