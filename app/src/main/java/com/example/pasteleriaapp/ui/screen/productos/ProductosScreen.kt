@@ -1,8 +1,5 @@
 package com.example.pasteleriaapp.ui.screen.productos
 
-import android.content.Context
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,8 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +36,7 @@ import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
+import com.example.pasteleriaapp.ui.components.CatalogImage
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 
 @Composable
@@ -149,9 +145,6 @@ private fun ProductoCard(
     producto: Producto,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    val imageResId = painterResourceFromName(context, producto.imagenProducto)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,13 +152,14 @@ private fun ProductoCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            Image(
-                painter = painterResource(id = imageResId),
+            CatalogImage(
+                imagePath = producto.imagenProducto,
                 contentDescription = "Imagen de ${producto.nombreProducto}",
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                placeholderRes = R.drawable.ic_launcher_background
             )
             Text(
                 text = producto.nombreProducto,
@@ -177,20 +171,5 @@ private fun ProductoCard(
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@DrawableRes
-@Composable
-private fun painterResourceFromName(context: Context, resName: String): Int {
-    return try {
-        val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
-        if (resId == 0) {
-            R.drawable.ic_launcher_background
-        } else {
-            resId
-        }
-    } catch (e: Exception) {
-        R.drawable.ic_launcher_background
     }
 }

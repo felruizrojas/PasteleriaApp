@@ -271,7 +271,7 @@ fun AppNavGraph(
                 throw IllegalArgumentException("Se requiere un idCategoria para crear un producto nuevo")
             }
 
-            val factory = ProductoFormViewModelFactory(productoRepository, idProducto, idCategoria)
+            val factory = ProductoFormViewModelFactory(productoRepository, categoriaRepository, idProducto, idCategoria)
             val viewModel: ProductoFormViewModel = viewModel(
                 key = "form_producto_$idProducto",
                 factory = factory

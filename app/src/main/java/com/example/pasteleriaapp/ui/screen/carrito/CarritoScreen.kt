@@ -1,8 +1,5 @@
 package com.example.pasteleriaapp.ui.screen.carrito
 
-import android.content.Context
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +45,7 @@ import com.example.pasteleriaapp.domain.model.CarritoItem
 import com.example.pasteleriaapp.domain.model.Usuario
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
+import com.example.pasteleriaapp.ui.components.CatalogImage
 import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 
 @Composable
@@ -210,8 +207,6 @@ fun CarritoItemRow(
     onEliminar: () -> Unit,
     onEditarMensaje: () -> Unit
 ) {
-    val context = LocalContext.current
-    val imageResId = painterResourceFromName(context, item.imagenProducto)
     val formatoMoneda = remember {
         java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
             maximumFractionDigits = 0
@@ -229,8 +224,8 @@ fun CarritoItemRow(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = imageResId),
+            CatalogImage(
+                imagePath = item.imagenProducto,
                 contentDescription = item.nombreProducto,
                 modifier = Modifier
                     .size(80.dp)
@@ -328,16 +323,5 @@ fun CarritoBottomBar(
                 Text("Pagar")
             }
         }
-    }
-}
-
-@DrawableRes
-@Composable
-private fun painterResourceFromName(context: Context, resName: String): Int {
-    return try {
-        val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
-        if (resId == 0) R.drawable.ic_launcher_background else resId
-    } catch (e: Exception) {
-        R.drawable.ic_launcher_background
     }
 }

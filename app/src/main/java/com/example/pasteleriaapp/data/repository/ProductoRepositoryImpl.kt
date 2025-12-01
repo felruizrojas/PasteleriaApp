@@ -4,6 +4,7 @@ import com.example.pasteleriaapp.data.local.dao.ProductoDao
 import com.example.pasteleriaapp.data.local.entity.toProducto
 import com.example.pasteleriaapp.data.local.entity.toProductoEntity
 import com.example.pasteleriaapp.data.remote.api.PasteleriaApiService
+import com.example.pasteleriaapp.data.remote.api.ensureRemoteImagePath
 import com.example.pasteleriaapp.data.remote.mapper.toDomain
 import com.example.pasteleriaapp.data.remote.mapper.toEntity
 import com.example.pasteleriaapp.data.remote.mapper.toRemoteDto
@@ -50,7 +51,10 @@ class ProductoRepositoryImpl(
     }
 
     override suspend fun insertarProducto(producto: Producto) {
-        val remote = apiService.crearProducto(producto.toRemoteDto())
+        val resolved = producto.copy(
+            imagenProducto = apiService.ensureRemoteImagePath(producto.imagenProducto, "productos")
+        )
+        val remote = apiService.crearProducto(resolved.toRemoteDto())
         productoDao.insertarProducto(remote.toEntity())
     }
 
@@ -60,7 +64,10 @@ class ProductoRepositoryImpl(
     }
 
     override suspend fun actualizarProducto(producto: Producto) {
-        val remote = apiService.actualizarProducto(producto.idProducto, producto.toRemoteDto())
+        val resolved = producto.copy(
+            imagenProducto = apiService.ensureRemoteImagePath(producto.imagenProducto, "productos")
+        )
+        val remote = apiService.actualizarProducto(producto.idProducto, resolved.toRemoteDto())
         productoDao.insertarProducto(remote.toEntity())
     }
 

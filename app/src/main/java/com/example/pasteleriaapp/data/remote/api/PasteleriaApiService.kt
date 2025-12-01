@@ -7,20 +7,25 @@ import com.example.pasteleriaapp.data.remote.dto.CarritoItemDto
 import com.example.pasteleriaapp.data.remote.dto.CarritoItemPayloadDto
 import com.example.pasteleriaapp.data.remote.dto.CategoriaDto
 import com.example.pasteleriaapp.data.remote.dto.CrearPedidoPayloadDto
+import com.example.pasteleriaapp.data.remote.dto.ImageUploadResponseDto
 import com.example.pasteleriaapp.data.remote.dto.LoginRequestDto
 import com.example.pasteleriaapp.data.remote.dto.LoginResponseDto
 import com.example.pasteleriaapp.data.remote.dto.PedidoDto
 import com.example.pasteleriaapp.data.remote.dto.ProductoDto
 import com.example.pasteleriaapp.data.remote.dto.UsuarioDto
 import com.example.pasteleriaapp.data.remote.dto.UsuarioPayloadDto
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Part
 
 interface PasteleriaApiService {
 
@@ -157,4 +162,12 @@ interface PasteleriaApiService {
 
     @DELETE("usuarios/{idUsuario}/carrito")
     suspend fun limpiarCarrito(@Path("idUsuario") idUsuario: Int)
+
+    // Uploads
+    @Multipart
+    @POST("uploads")
+    suspend fun subirImagen(
+        @Part file: MultipartBody.Part,
+        @Part("folder") folder: RequestBody
+    ): ImageUploadResponseDto
 }

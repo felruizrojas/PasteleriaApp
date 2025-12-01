@@ -2,7 +2,6 @@ package com.example.pasteleriaapp.ui.screen.pedidos
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,8 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,6 +42,7 @@ import com.example.pasteleriaapp.domain.model.displayName
 import com.example.pasteleriaapp.domain.model.progressFraction
 import com.example.pasteleriaapp.domain.model.progressStep
 import com.example.pasteleriaapp.domain.model.trackingEstados
+import com.example.pasteleriaapp.ui.components.CatalogImage
 import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -146,9 +144,6 @@ private fun DetallesPedidoHeader(pedido: Pedido) {
 
 @Composable
 private fun ProductoPedidoRow(producto: PedidoProducto) {
-    val context = LocalContext.current
-    val imageResId = painterResourceFromName(context, producto.imagenProducto)
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -159,8 +154,8 @@ private fun ProductoPedidoRow(producto: PedidoProducto) {
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = imageResId),
+            CatalogImage(
+                imagePath = producto.imagenProducto,
                 contentDescription = producto.nombreProducto,
                 modifier = Modifier
                     .size(60.dp)
@@ -200,16 +195,6 @@ private fun EstadoPedidoTimeline(estado: EstadoPedido) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Cancel,
-                contentDescription = "Pedido cancelado",
-                tint = MaterialTheme.colorScheme.error
-            )
-            Text(
-                "El pedido fue cancelado",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error
-            )
         }
         return
     }

@@ -3,8 +3,6 @@ package com.example.pasteleriaapp.ui.screen.productos
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,13 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.domain.model.Usuario
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
+import com.example.pasteleriaapp.ui.components.CatalogImage
 import com.example.pasteleriaapp.ui.screen.auth.VoiceTextField
 import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 
@@ -114,7 +112,6 @@ private fun ProductoDetalle(
     onRequireLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val imageResId = painterResourceFromName(context, producto.imagenProducto)
 
     var mensajePersonalizado by remember { mutableStateOf("") }
 
@@ -124,8 +121,8 @@ private fun ProductoDetalle(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
-        Image(
-            painter = painterResource(id = imageResId),
+        CatalogImage(
+            imagePath = producto.imagenProducto,
             contentDescription = "Imagen de ${producto.nombreProducto}",
             modifier = Modifier
                 .fillMaxWidth()
@@ -245,14 +242,4 @@ private fun compartirProducto(context: Context, producto: Producto, mensaje: Str
     }
 
     context.startActivity(Intent.createChooser(intent, "Compartir producto en..."))
-}
-
-@DrawableRes
-private fun painterResourceFromName(context: Context, resName: String): Int {
-    return try {
-        val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
-        if (resId == 0) R.drawable.ic_launcher_background else resId
-    } catch (e: Exception) {
-        R.drawable.ic_launcher_background
-    }
 }

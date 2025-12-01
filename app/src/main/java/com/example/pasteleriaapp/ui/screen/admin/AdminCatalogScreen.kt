@@ -1,6 +1,10 @@
 package com.example.pasteleriaapp.ui.screen.admin
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +57,9 @@ import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Categoria
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.viewmodel.AdminCatalogViewModel
+import com.example.pasteleriaapp.util.ImageStorageManager
+import java.io.File
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminCatalogContent(
@@ -402,6 +410,27 @@ private fun DialogoCategoria(
     confirmLabel: String,
     enabled: Boolean
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var guardandoImagenLocal by remember { mutableStateOf(false) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            guardandoImagenLocal = true
+            coroutineScope.launch {
+                val savedPath = ImageStorageManager.saveImageFromUri(context, uri, "categorias")
+                guardandoImagenLocal = false
+                if (savedPath != null) {
+                    val storedUri = Uri.fromFile(File(savedPath)).toString()
+                    onImagenChange(storedUri)
+                } else {
+                    Toast.makeText(context, "No se pudo guardar la imagen seleccionada", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     AlertDialog(
         onDismissRequest = { if (enabled) onDismiss() },
         title = { Text(titulo) },
@@ -423,6 +452,16 @@ private fun DialogoCategoria(
                     label = { Text("Imagen (recurso o URL)") },
                     singleLine = true
                 )
+                TextButton(
+                    onClick = {
+                        imagePickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    enabled = enabled && !guardandoImagenLocal
+                ) {
+                    Text(if (guardandoImagenLocal) "Guardando imagen..." else "Seleccionar imagen del dispositivo")
+                }
             }
         },
         confirmButton = {

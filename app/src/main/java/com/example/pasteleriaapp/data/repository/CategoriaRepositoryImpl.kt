@@ -4,6 +4,7 @@ import com.example.pasteleriaapp.data.local.dao.CategoriaDao
 import com.example.pasteleriaapp.data.local.entity.toCategoria
 import com.example.pasteleriaapp.data.local.entity.toCategoriaEntity
 import com.example.pasteleriaapp.data.remote.api.PasteleriaApiService
+import com.example.pasteleriaapp.data.remote.api.ensureRemoteImagePath
 import com.example.pasteleriaapp.data.remote.mapper.toDomain
 import com.example.pasteleriaapp.data.remote.mapper.toEntity
 import com.example.pasteleriaapp.data.remote.mapper.toRemoteDto
@@ -39,7 +40,10 @@ class CategoriaRepositoryImpl(
     }
 
     override suspend fun insertarCategoria(categoria: Categoria) {
-        val remote = apiService.crearCategoria(categoria.toRemoteDto())
+        val resolved = categoria.copy(
+            imagenCategoria = apiService.ensureRemoteImagePath(categoria.imagenCategoria, "categorias")
+        )
+        val remote = apiService.crearCategoria(resolved.toRemoteDto())
         categoriaDao.insertarCategoria(remote.toEntity())
     }
 
@@ -50,7 +54,10 @@ class CategoriaRepositoryImpl(
     }
 
     override suspend fun actualizarCategoria(categoria: Categoria) {
-        val remote = apiService.actualizarCategoria(categoria.idCategoria, categoria.toRemoteDto())
+        val resolved = categoria.copy(
+            imagenCategoria = apiService.ensureRemoteImagePath(categoria.imagenCategoria, "categorias")
+        )
+        val remote = apiService.actualizarCategoria(categoria.idCategoria, resolved.toRemoteDto())
         categoriaDao.insertarCategoria(remote.toEntity())
     }
 
